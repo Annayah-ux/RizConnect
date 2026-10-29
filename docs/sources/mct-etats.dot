@@ -1,0 +1,137 @@
+digraph ETATS {
+  graph [rankdir=TB, splines=spline, nodesep=0.25, ranksep=0.5, pad=0.3, bgcolor="white", fontname="Helvetica", labelloc="b",
+    label=<<B>Cycles de vie — RizConnect</B> <FONT POINT-SIZE="9">· états issus des contraintes de gestion RG-04 à RG-06</FONT>>];
+  node [fontname="Helvetica", fontsize=8.5];
+  edge [fontname="Helvetica", fontsize=7, color="#64748b", arrowsize=0.6];
+
+  subgraph cluster_e0 {
+    label=<<B>Cycle cultural</B> <FONT POINT-SIZE="8">(cycle_cultural.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_0 [shape=point, width=0.12, color="#0f172a"];
+    s_0_planifie [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>planifie</B>>];
+    s_0_en_cours [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>en_cours</B>>];
+    s_0_termine [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>termine</B>>];
+    s_0_abandonne [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>abandonne</B>>];
+    start_0 -> s_0_planifie;
+    s_0_planifie -> s_0_en_cours [label=<<FONT POINT-SIZE="7">démarrage du travail du sol</FONT>>];
+    s_0_en_cours -> s_0_termine [label=<<FONT POINT-SIZE="7">récolte déclarée</FONT>>];
+    s_0_planifie -> s_0_abandonne [label=<<FONT POINT-SIZE="7">parcelle non exploitée</FONT>>];
+    s_0_en_cours -> s_0_abandonne [label=<<FONT POINT-SIZE="7">sécheresse, cyclone, ravageurs</FONT>>];
+  }
+
+  subgraph cluster_e1 {
+    label=<<B>Étape planifiée</B> <FONT POINT-SIZE="8">(etape_planifiee.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_1 [shape=point, width=0.12, color="#0f172a"];
+    s_1_prevue [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>prevue</B>>];
+    s_1_en_cours [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>en_cours</B>>];
+    s_1_realisee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>realisee</B>>];
+    s_1_sautee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>sautee</B>>];
+    start_1 -> s_1_prevue;
+    s_1_prevue -> s_1_en_cours [label=<<FONT POINT-SIZE="7">date prévue atteinte</FONT>>];
+    s_1_en_cours -> s_1_realisee [label=<<FONT POINT-SIZE="7">saisie de la date réelle</FONT>>];
+    s_1_prevue -> s_1_sautee [label=<<FONT POINT-SIZE="7">étape non nécessaire</FONT>>];
+  }
+
+  subgraph cluster_e2 {
+    label=<<B>Décalage</B> <FONT POINT-SIZE="8">(decalage.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_2 [shape=point, width=0.12, color="#0f172a"];
+    s_2_propose [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>propose</B>>];
+    s_2_valide [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>valide</B>>];
+    s_2_refuse [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>refuse</B>>];
+    start_2 -> s_2_propose;
+    s_2_propose -> s_2_valide [label=<<FONT POINT-SIZE="7">accord de l’exploitant ou de l’agent (RG-05)</FONT>>];
+    s_2_propose -> s_2_refuse [label=<<FONT POINT-SIZE="7">refus explicite</FONT>>];
+  }
+
+  subgraph cluster_e3 {
+    label=<<B>Réservation</B> <FONT POINT-SIZE="8">(reservation.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_3 [shape=point, width=0.12, color="#0f172a"];
+    s_3_demandee [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>demandee</B>>];
+    s_3_confirmee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>confirmee</B>>];
+    s_3_refusee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>refusee</B>>];
+    s_3_annulee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>annulee</B>>];
+    s_3_terminee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>terminee</B>>];
+    start_3 -> s_3_demandee;
+    s_3_demandee -> s_3_confirmee [label=<<FONT POINT-SIZE="7">accord du propriétaire</FONT>>];
+    s_3_demandee -> s_3_refusee [label=<<FONT POINT-SIZE="7">indisponibilité</FONT>>];
+    s_3_confirmee -> s_3_annulee [label=<<FONT POINT-SIZE="7">annulation du demandeur</FONT>>];
+    s_3_confirmee -> s_3_terminee [label=<<FONT POINT-SIZE="7">retour du matériel</FONT>>];
+  }
+
+  subgraph cluster_e4 {
+    label=<<B>Demande de crédit</B> <FONT POINT-SIZE="8">(demande_credit.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_4 [shape=point, width=0.12, color="#0f172a"];
+    s_4_soumise [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>soumise</B>>];
+    s_4_etude [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>etude</B>>];
+    s_4_accordee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>accordee</B>>];
+    s_4_refusee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>refusee</B>>];
+    s_4_decaissee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>decaissee</B>>];
+    s_4_remboursee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>remboursee</B>>];
+    start_4 -> s_4_soumise;
+    s_4_soumise -> s_4_etude [label=<<FONT POINT-SIZE="7">dossier complet</FONT>>];
+    s_4_etude -> s_4_accordee [label=<<FONT POINT-SIZE="7">décision favorable de l’IMF</FONT>>];
+    s_4_etude -> s_4_refusee [label=<<FONT POINT-SIZE="7">garantie insuffisante</FONT>>];
+    s_4_accordee -> s_4_decaissee [label=<<FONT POINT-SIZE="7">mise à disposition des fonds</FONT>>];
+    s_4_decaissee -> s_4_remboursee [label=<<FONT POINT-SIZE="7">remboursement de campagne</FONT>>];
+  }
+
+  subgraph cluster_e5 {
+    label=<<B>Sinistre</B> <FONT POINT-SIZE="8">(sinistre.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_5 [shape=point, width=0.12, color="#0f172a"];
+    s_5_signale [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>signale</B>>];
+    s_5_transmis [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>transmis</B>>];
+    s_5_en_traitement [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>en_traitement</B>>];
+    s_5_cloture [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>cloture</B>>];
+    start_5 -> s_5_signale;
+    s_5_signale -> s_5_transmis [label=<<FONT POINT-SIZE="7">notification au BNGRC</FONT>>];
+    s_5_transmis -> s_5_en_traitement [label=<<FONT POINT-SIZE="7">évaluation de l’agent</FONT>>];
+    s_5_en_traitement -> s_5_cloture [label=<<FONT POINT-SIZE="7">dossier clos</FONT>>];
+  }
+
+  subgraph cluster_e6 {
+    label=<<B>Signalement d’ouvrage</B> <FONT POINT-SIZE="8">(signalement_infra.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_6 [shape=point, width=0.12, color="#0f172a"];
+    s_6_nouveau [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>nouveau</B>>];
+    s_6_transmis [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>transmis</B>>];
+    s_6_en_reparation [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>en_reparation</B>>];
+    s_6_repare [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>repare</B>>];
+    start_6 -> s_6_nouveau;
+    s_6_nouveau -> s_6_transmis [label=<<FONT POINT-SIZE="7">transmission au gestionnaire</FONT>>];
+    s_6_transmis -> s_6_en_reparation [label=<<FONT POINT-SIZE="7">travaux engagés</FONT>>];
+    s_6_en_reparation -> s_6_repare [label=<<FONT POINT-SIZE="7">réception des travaux</FONT>>];
+  }
+
+  subgraph cluster_e7 {
+    label=<<B>Alerte</B> <FONT POINT-SIZE="8">(alerte.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_7 [shape=point, width=0.12, color="#0f172a"];
+    s_7_brouillon [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>brouillon</B>>];
+    s_7_emise [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>emise</B>>];
+    s_7_cloturee [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>cloturee</B>>];
+    start_7 -> s_7_brouillon;
+    s_7_brouillon -> s_7_emise [label=<<FONT POINT-SIZE="7">validation et diffusion (RG-04)</FONT>>];
+    s_7_emise -> s_7_cloturee [label=<<FONT POINT-SIZE="7">fin de validité</FONT>>];
+  }
+
+  subgraph cluster_e8 {
+    label=<<B>Notification</B> <FONT POINT-SIZE="8">(notification.statut)</FONT>>;
+    fontsize=10; color="#cbd5e1"; style="rounded"; margin=10;
+    start_8 [shape=point, width=0.12, color="#0f172a"];
+    s_8_en_attente [shape=box, style="rounded,filled", fillcolor="#0f172a", fontcolor="#ffffff", color="#0f172a", label=<<B>en_attente</B>>];
+    s_8_envoye [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>envoye</B>>];
+    s_8_echec [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>echec</B>>];
+    s_8_lu [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>lu</B>>];
+    s_8_accuse [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", label=<<B>accuse</B>>];
+    start_8 -> s_8_en_attente;
+    s_8_en_attente -> s_8_envoye [label=<<FONT POINT-SIZE="7">passerelle push / SMS / USSD</FONT>>];
+    s_8_en_attente -> s_8_echec [label=<<FONT POINT-SIZE="7">numéro invalide ou opérateur indisponible</FONT>>];
+    s_8_envoye -> s_8_lu [label=<<FONT POINT-SIZE="7">ouverture de l’application</FONT>>];
+    s_8_envoye -> s_8_accuse [label=<<FONT POINT-SIZE="7">accusé de réception (RF-24)</FONT>>];
+  }
+}

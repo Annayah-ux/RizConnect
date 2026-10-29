@@ -1,0 +1,111 @@
+digraph MCD {
+  graph [rankdir=TB, splines=true, overlap=false, nodesep=0.35, ranksep=1.0, pad=0.35, bgcolor="white", fontname="Helvetica", labelloc="b", labeljust="l",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#94a3b8">
+        <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9"><B>MCD — D6 GCV, stocks, crédit et prix</B> <FONT POINT-SIZE="9">· vue détaillée (modules M7)</FONT></TD></TR>
+        
+      </TABLE>>];
+  node [fontname="Helvetica", fontsize=9, margin=0];
+  edge [fontname="Helvetica", fontsize=7.5, color="#64748b", fontcolor="#334155", penwidth=1.1, arrowsize=0.7];
+
+  subgraph cluster_D6 {
+    label=<<B>D6 — GCV, stocks, crédit et prix</B><BR/><FONT POINT-SIZE="8">Modules M7</FONT>>;
+    fontsize=11; fontcolor="#0891b2"; color="#0891b2"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#ffffff";
+  GCV [shape=plaintext, tooltip="Grenier Commun Villageois : membres, dépôts, retraits et valeur du stock (RF-31).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>GCV</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Grenier communautaire (GCV)</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">capacite_t <FONT COLOR="#64748b">: numeric(8,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">reglement <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_ouverture <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  MEMBRE_GCV [shape=plaintext, tooltip="Adhésion d'une exploitation à un grenier, avec rôle interne (RF-31).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>MEMBRE_GCV</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Membre de GCV</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">role_membre <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_adhesion <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  DECISION_COLLECTIVE [shape=plaintext, tooltip="Décision de l'assemblée du grenier autorisant un retrait ou une mise en garantie (RG-06).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>DECISION_COLLECTIVE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Décision collective</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">objet <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_decision <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">quorum_pct <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">proces_verbal <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR>
+    </TABLE>>];
+  MOUVEMENT_STOCK [shape=plaintext, tooltip="Dépôt ou retrait de paddy, avec reçu numérique et décision collective éventuelle (RF-31, RF-32, RG-06).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>MOUVEMENT_STOCK</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Mouvement de stock</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_mouvement <FONT COLOR="#64748b">: varchar(8)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">quantite_kg <FONT COLOR="#64748b">: numeric(10,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">qualite <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_mouvement <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  RECU [shape=plaintext, tooltip="Reçu remis pour chaque dépôt ou retrait (RF-32), numéro unique et PDF archivable.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>RECU</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Reçu numérique</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">numero <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_emission <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">url_pdf <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR>
+    </TABLE>>];
+  DEMANDE_CREDIT [shape=plaintext, tooltip="Dossier de crédit de campagne déposé auprès d'une IMF, avec le stock comme garantie (RF-33).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>DEMANDE_CREDIT</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Demande de crédit</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">montant_demande_mga <FONT COLOR="#64748b">: numeric(12,0)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">montant_accorde_mga <FONT COLOR="#64748b">: numeric(12,0)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">objet <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_demande <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_decision <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR>
+    </TABLE>>];
+  GARANTIE_STOCK [shape=plaintext, tooltip="Stock de paddy affecté en garantie d'un crédit (RF-33), valorisé au prix du marché.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>GARANTIE_STOCK</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Garantie en stock</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">quantite_kg <FONT COLOR="#64748b">: numeric(10,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">valeur_mga <FONT COLOR="#64748b">: numeric(12,0)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  PRIX_MARCHE [shape=plaintext, tooltip="Relevé de prix du riz par marché et par variété (RF-34, RF-35).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#0891b2" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#cffafe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>PRIX_MARCHE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Prix du marché</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_releve <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">prix_kg_mga <FONT COLOR="#64748b">: numeric(8,0)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">marche <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">source <FONT COLOR="#64748b">: varchar(60)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  subgraph cluster_CTX {
+    label=<<B>Entités de contexte (autres domaines)</B>>;
+    fontsize=9; fontcolor="#94a3b8"; color="#94a3b8"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#f8fafc";
+  ZONE [shape=plaintext, tooltip="Découpage région → district → commune → Fokontany (RF-03). Relation réflexive pour la hiérarchie.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ZONE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Zone administrative</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">code <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_zone <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">population <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  ORGANISATION [shape=plaintext, tooltip="Coopérative, IMF, ONG, CFAMA, MAEP, BNGRC ou service météo (RF-02, RF-26, RF-33).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ORGANISATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Organisation partenaire</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_organisation <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  UTILISATEUR [shape=plaintext, tooltip="Compte identifié par son téléphone (RF-01), rattaché à une zone et éventuellement à une organisation.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>UTILISATEUR</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Utilisateur</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">prenom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">mot_de_passe_hash <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">langue <FONT COLOR="#64748b">: varchar(2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consentement_le <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_inscription <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  EXPLOITATION [shape=plaintext, tooltip="Unité de production d'un exploitant dans un Fokontany (RF-05).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>EXPLOITATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Exploitation</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">code <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">superficie_totale_ha <FONT COLOR="#64748b">: numeric(8,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  VARIETE [shape=plaintext, tooltip="Référentiel des variétés (RF-07, RF-50) : durée de cycle et potentiel de rendement.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>VARIETE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Variété de riz</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">cycle_jours <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">rendement_potentiel_t_ha <FONT COLOR="#64748b">: numeric(4,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  CAMPAGNE [shape=plaintext, tooltip="Période de production (grande saison / contre-saison) servant de référentiel temporel (RF-07, RF-37).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>CAMPAGNE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Campagne rizicole</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">libelle <FONT COLOR="#64748b">: varchar(40)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_debut <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_fin <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">saison <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  ORGANISATION -> GCV [label=<<FONT POINT-SIZE="7">GÈRE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A11 — Coopérative de tutelle"];
+  UTILISATEUR -> GCV [label=<<FONT POINT-SIZE="7">RESPONSABLE_DE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A12 — RF-31"];
+  ZONE -> GCV [label=<<FONT POINT-SIZE="7">ABRITE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A13 — RF-31"];
+  ZONE -> PRIX_MARCHE [label=<<FONT POINT-SIZE="7">PUBLIE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A47 — RF-34"];
+  VARIETE -> PRIX_MARCHE [label=<<FONT POINT-SIZE="7">COTE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A48 — RF-34"];
+  CAMPAGNE -> PRIX_MARCHE [label=<<FONT POINT-SIZE="7">SITUE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A49 — RF-34"];
+  EXPLOITATION -> MEMBRE_GCV [label=<<FONT POINT-SIZE="7">ADHÈRE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A56 — RF-31"];
+  GCV -> MEMBRE_GCV [label=<<FONT POINT-SIZE="7">COMPTE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A57 — RF-31"];
+  MEMBRE_GCV -> MOUVEMENT_STOCK [label=<<FONT POINT-SIZE="7">EFFECTUE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A58 — RF-32"];
+  MOUVEMENT_STOCK -> RECU [label=<<FONT POINT-SIZE="7">JUSTIFIE</FONT>>, taillabel=<<B>0,1</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A59 — RF-32"];
+  UTILISATEUR -> MOUVEMENT_STOCK [label=<<FONT POINT-SIZE="7">ENREGISTRE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A60 — RF-32"];
+  DECISION_COLLECTIVE -> MOUVEMENT_STOCK [label=<<FONT POINT-SIZE="7">AUTORISE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A61 — RG-06"];
+  GCV -> DECISION_COLLECTIVE [label=<<FONT POINT-SIZE="7">TIENT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A62 — RG-06"];
+  UTILISATEUR -> DECISION_COLLECTIVE [label=<<FONT POINT-SIZE="7">SECRÈTE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A63 — RF-31"];
+  EXPLOITATION -> DEMANDE_CREDIT [label=<<FONT POINT-SIZE="7">SOLLICITE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A64 — RF-33"];
+  ORGANISATION -> DEMANDE_CREDIT [label=<<FONT POINT-SIZE="7">INSTRUIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A65 — RF-33"];
+  CAMPAGNE -> DEMANDE_CREDIT [label=<<FONT POINT-SIZE="7">FINANCE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A66 — RF-33"];
+  UTILISATEUR -> DEMANDE_CREDIT [label=<<FONT POINT-SIZE="7">SUIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A67 — RF-33"];
+  DEMANDE_CREDIT -> GARANTIE_STOCK [label=<<FONT POINT-SIZE="7">EST_GARANTIE_PAR</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A68 — RF-33"];
+  GCV -> GARANTIE_STOCK [label=<<FONT POINT-SIZE="7">NANTIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A69 — RF-33"];
+}

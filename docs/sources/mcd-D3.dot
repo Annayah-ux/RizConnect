@@ -1,0 +1,69 @@
+digraph MCD {
+  graph [rankdir=TB, splines=true, overlap=false, nodesep=0.35, ranksep=1.0, pad=0.35, bgcolor="white", fontname="Helvetica", labelloc="b", labeljust="l",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#94a3b8">
+        <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9"><B>MCD — D3 Bibliothèque technique et formation</B> <FONT POINT-SIZE="9">· vue détaillée (modules M4)</FONT></TD></TR>
+        
+      </TABLE>>];
+  node [fontname="Helvetica", fontsize=9, margin=0];
+  edge [fontname="Helvetica", fontsize=7.5, color="#64748b", fontcolor="#334155", penwidth=1.1, arrowsize=0.7];
+
+  subgraph cluster_D3 {
+    label=<<B>D3 — Bibliothèque technique et formation</B><BR/><FONT POINT-SIZE="8">Modules M4</FONT>>;
+    fontsize=11; fontcolor="#d97706"; color="#d97706"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#ffffff";
+  FICHE_TECHNIQUE [shape=plaintext, tooltip="Fiche pratique par étape : technique, outil traditionnel et outil moderne équivalent (RF-14, RF-16, RF-47).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>FICHE_TECHNIQUE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Fiche technique</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre_mg <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre_fr <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">resume_mg <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">resume_fr <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">outil_traditionnel <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">outil_moderne <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_publication <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  MEDIA [shape=plaintext, tooltip="Illustration, vidéo courte ou lecture audio d'une fiche, par langue (RF-15).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>MEDIA</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Média</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_media <FONT COLOR="#64748b">: varchar(12)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">url <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">legende <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">langue <FONT COLOR="#64748b">: varchar(2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">duree_s <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR>
+    </TABLE>>];
+  FORMATION [shape=plaintext, tooltip="Formation courte avec quiz et suivi de progression (RF-17).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>FORMATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Module de formation</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">duree_min <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">niveau <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  QUESTION [shape=plaintext, tooltip="Question d'évaluation rattachée à un module de formation (RF-17).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>QUESTION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Question de quiz</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">enonce <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">ordre <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">points <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR>
+    </TABLE>>];
+  CHOIX_REPONSE [shape=plaintext, tooltip="Proposition de réponse, une seule correcte par question (RF-17).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>CHOIX_REPONSE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Choix de réponse</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">libelle <FONT COLOR="#64748b">: varchar(240)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">correcte <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">ordre <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR>
+    </TABLE>>];
+  INSCRIPTION_FORMATION [shape=plaintext, tooltip="Suivi individuel : progression et score (RF-17).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#d97706" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fef3c7" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>INSCRIPTION_FORMATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Inscription à une formation</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_inscription <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">progression_pct <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">score <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  subgraph cluster_CTX {
+    label=<<B>Entités de contexte (autres domaines)</B>>;
+    fontsize=9; fontcolor="#94a3b8"; color="#94a3b8"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#f8fafc";
+  UTILISATEUR [shape=plaintext, tooltip="Compte identifié par son téléphone (RF-01), rattaché à une zone et éventuellement à une organisation.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>UTILISATEUR</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Utilisateur</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">prenom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">mot_de_passe_hash <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">langue <FONT COLOR="#64748b">: varchar(2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consentement_le <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_inscription <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  ETAPE_CULTURELLE [shape=plaintext, tooltip="Référentiel des étapes : travail du sol, semis, repiquage, sarclage, moisson, battage (RF-09, RF-14).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ETAPE_CULTURELLE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Étape culturelle</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>code</B></U> <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">libelle <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">ordre <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">delai_min_jours <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">delai_max_jours <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  ETAPE_CULTURELLE -> FICHE_TECHNIQUE [label=<<FONT POINT-SIZE="7">DOCUMENTE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A29 — RF-14"];
+  FICHE_TECHNIQUE -> MEDIA [label=<<FONT POINT-SIZE="7">ILLUSTRE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A30 — RF-15"];
+  FICHE_TECHNIQUE -> FORMATION [label=<<FONT POINT-SIZE="7">ACCOMPAGNE</FONT>>, taillabel=<<B>0,1</B>>, headlabel=<<B>0,n</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A31 — RF-17"];
+  FORMATION -> QUESTION [label=<<FONT POINT-SIZE="7">ÉVALUE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A32 — RF-17"];
+  QUESTION -> CHOIX_REPONSE [label=<<FONT POINT-SIZE="7">PROPOSE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A33 — RF-17"];
+  UTILISATEUR -> INSCRIPTION_FORMATION [label=<<FONT POINT-SIZE="7">SUIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A34 — RF-17"];
+  FORMATION -> INSCRIPTION_FORMATION [label=<<FONT POINT-SIZE="7">ACCUEILLE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A35 — RF-17"];
+  UTILISATEUR -> FICHE_TECHNIQUE [label=<<FONT POINT-SIZE="7">RÉDIGE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A36 — RF-47"];
+}

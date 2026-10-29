@@ -1,0 +1,92 @@
+## Cycle cultural
+
+```mermaid
+stateDiagram-v2
+  [*] --> planifie
+  planifie --> en_cours : démarrage du travail du sol
+  en_cours --> termine : récolte déclarée
+  planifie --> abandonne : parcelle non exploitée
+  en_cours --> abandonne : sécheresse, cyclone, ravageurs
+```
+
+## Étape planifiée
+
+```mermaid
+stateDiagram-v2
+  [*] --> prevue
+  prevue --> en_cours : date prévue atteinte
+  en_cours --> realisee : saisie de la date réelle
+  prevue --> sautee : étape non nécessaire
+```
+
+## Décalage
+
+```mermaid
+stateDiagram-v2
+  [*] --> propose
+  propose --> valide : accord de l’exploitant ou de l’agent (RG-05)
+  propose --> refuse : refus explicite
+```
+
+## Réservation
+
+```mermaid
+stateDiagram-v2
+  [*] --> demandee
+  demandee --> confirmee : accord du propriétaire
+  demandee --> refusee : indisponibilité
+  confirmee --> annulee : annulation du demandeur
+  confirmee --> terminee : retour du matériel
+```
+
+## Demande de crédit
+
+```mermaid
+stateDiagram-v2
+  [*] --> soumise
+  soumise --> etude : dossier complet
+  etude --> accordee : décision favorable de l’IMF
+  etude --> refusee : garantie insuffisante
+  accordee --> decaissee : mise à disposition des fonds
+  decaissee --> remboursee : remboursement de campagne
+```
+
+## Sinistre
+
+```mermaid
+stateDiagram-v2
+  [*] --> signale
+  signale --> transmis : notification au BNGRC
+  transmis --> en_traitement : évaluation de l’agent
+  en_traitement --> cloture : dossier clos
+```
+
+## Signalement d’ouvrage
+
+```mermaid
+stateDiagram-v2
+  [*] --> nouveau
+  nouveau --> transmis : transmission au gestionnaire
+  transmis --> en_reparation : travaux engagés
+  en_reparation --> repare : réception des travaux
+```
+
+## Alerte
+
+```mermaid
+stateDiagram-v2
+  [*] --> brouillon
+  brouillon --> emise : validation et diffusion (RG-04)
+  emise --> cloturee : fin de validité
+```
+
+## Notification
+
+```mermaid
+stateDiagram-v2
+  [*] --> en_attente
+  en_attente --> envoye : passerelle push / SMS / USSD
+  en_attente --> echec : numéro invalide ou opérateur indisponible
+  envoye --> lu : ouverture de l’application
+  envoye --> accuse : accusé de réception (RF-24)
+```

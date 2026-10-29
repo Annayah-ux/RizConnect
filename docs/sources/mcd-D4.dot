@@ -1,0 +1,82 @@
+digraph MCD {
+  graph [rankdir=TB, splines=true, overlap=false, nodesep=0.35, ranksep=1.0, pad=0.35, bgcolor="white", fontname="Helvetica", labelloc="b", labeljust="l",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#94a3b8">
+        <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9"><B>MCD — D4 Alertes, météo et sensibilisation</B> <FONT POINT-SIZE="9">· vue détaillée (modules M5 · M10)</FONT></TD></TR>
+        
+      </TABLE>>];
+  node [fontname="Helvetica", fontsize=9, margin=0];
+  edge [fontname="Helvetica", fontsize=7.5, color="#64748b", fontcolor="#334155", penwidth=1.1, arrowsize=0.7];
+
+  subgraph cluster_D4 {
+    label=<<B>D4 — Alertes, météo et sensibilisation</B><BR/><FONT POINT-SIZE="8">Modules M5 · M10</FONT>>;
+    fontsize=11; fontcolor="#dc2626"; color="#dc2626"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#ffffff";
+  ALERTE [shape=plaintext, tooltip="Alerte climatique ou sanitaire émise par le BNGRC ou la météo, prioritaire sur tout autre message (RF-20 à RF-23, RG-04).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ALERTE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Alerte</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_alerte <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">niveau <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">message_mg <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">message_fr <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consignes_mg <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consignes_fr <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">priorite <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_emission <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_fin <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  CIBLAGE_ALERTE [shape=plaintext, tooltip="Zones couvertes par une alerte (RF-23) ; une alerte peut viser plusieurs communes.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>CIBLAGE_ALERTE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Ciblage d'alerte</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR>
+    </TABLE>>];
+  NOTIFICATION [shape=plaintext, tooltip="Message envoyé à un utilisateur par push, SMS ou USSD, avec accusé de réception (RF-12, RF-21, RF-24).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>NOTIFICATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Notification</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">canal <FONT COLOR="#64748b">: varchar(8)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">message <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_envoi <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_lecture <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  DONNEE_PLUVIOMETRIQUE [shape=plaintext, tooltip="Relevé journalier par zone, base du calcul du déficit de pluie (RF-25).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>DONNEE_PLUVIOMETRIQUE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Donnée pluviométrique</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_mesure <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">pluie_mm <FONT COLOR="#64748b">: numeric(6,1)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">source <FONT COLOR="#64748b">: varchar(60)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  MESSAGE_SENSIBILISATION [shape=plaintext, tooltip="Message de sensibilisation ciblé par commune ou Fokontany (RF-18).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>MESSAGE_SENSIBILISATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Message de sensibilisation</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">titre <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">contenu_mg <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">contenu_fr <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_debut <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_fin <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  CIBLAGE_MESSAGE [shape=plaintext, tooltip="Zones destinataires d'un message de sensibilisation (RF-18).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#dc2626" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#fee2e2" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>CIBLAGE_MESSAGE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Ciblage de message</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  subgraph cluster_CTX {
+    label=<<B>Entités de contexte (autres domaines)</B>>;
+    fontsize=9; fontcolor="#94a3b8"; color="#94a3b8"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#f8fafc";
+  ZONE [shape=plaintext, tooltip="Découpage région → district → commune → Fokontany (RF-03). Relation réflexive pour la hiérarchie.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ZONE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Zone administrative</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">code <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_zone <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">population <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  UTILISATEUR [shape=plaintext, tooltip="Compte identifié par son téléphone (RF-01), rattaché à une zone et éventuellement à une organisation.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>UTILISATEUR</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Utilisateur</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">prenom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">mot_de_passe_hash <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">langue <FONT COLOR="#64748b">: varchar(2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consentement_le <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_inscription <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  ETAPE_PLANIFIEE [shape=plaintext, tooltip="Occurrence datée d'une étape pour un cycle (RF-09, RF-12), base des rappels.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ETAPE_PLANIFIEE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Étape planifiée</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_prevue <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_reelle <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  SINISTRE [shape=plaintext, tooltip="Déclaration d'inondation, cyclone, sécheresse ou ravageurs avec photo et position (RF-42, RF-43).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>SINISTRE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Sinistre</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_sinistre <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_survenance <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">superficie_touchee_ha <FONT COLOR="#64748b">: numeric(6,2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">latitude <FONT COLOR="#64748b">: numeric(9,6)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">longitude <FONT COLOR="#64748b">: numeric(9,6)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_transmission <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  UTILISATEUR -> ALERTE [label=<<FONT POINT-SIZE="7">ÉMET</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A37 — RF-23"];
+  ALERTE -> CIBLAGE_ALERTE [label=<<FONT POINT-SIZE="7">VISE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A38 — RF-23"];
+  ZONE -> CIBLAGE_ALERTE [label=<<FONT POINT-SIZE="7">EST_CIBLEE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A39 — RF-23"];
+  ALERTE -> NOTIFICATION [label=<<FONT POINT-SIZE="7">DÉCLENCHE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A40 — RG-04"];
+  UTILISATEUR -> NOTIFICATION [label=<<FONT POINT-SIZE="7">REÇOIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A41 — RF-21"];
+  ETAPE_PLANIFIEE -> NOTIFICATION [label=<<FONT POINT-SIZE="7">RAPPELLE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A42 — RF-12"];
+  ZONE -> DONNEE_PLUVIOMETRIQUE [label=<<FONT POINT-SIZE="7">MESURE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A43 — RF-25"];
+  UTILISATEUR -> MESSAGE_SENSIBILISATION [label=<<FONT POINT-SIZE="7">PUBLIE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A44 — RF-18"];
+  MESSAGE_SENSIBILISATION -> CIBLAGE_MESSAGE [label=<<FONT POINT-SIZE="7">VISE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A45 — RF-18"];
+  ZONE -> CIBLAGE_MESSAGE [label=<<FONT POINT-SIZE="7">EST_DESTINATAIRE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A46 — RF-18"];
+  ALERTE -> SINISTRE [label=<<FONT POINT-SIZE="7">PROVOQUE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A71 — RF-42"];
+}

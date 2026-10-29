@@ -1,0 +1,497 @@
+erDiagram
+  %% ZONE — Zone administrative (D1, Découpage région → district → commune → Fokontany (RF-03). Relation réflexive pour la hiérarchie.)
+  ZONE {
+    uuid id PK
+    varchar code UK
+    varchar nom
+    varchar type_zone
+    integer population
+    boolean actif
+  }
+  %% ORGANISATION — Organisation partenaire (D1, Coopérative, IMF, ONG, CFAMA, MAEP, BNGRC ou service météo (RF-02, RF-26, RF-33).)
+  ORGANISATION {
+    uuid id PK
+    varchar nom
+    varchar type_organisation
+    varchar telephone
+    varchar email
+    boolean actif
+  }
+  %% UTILISATEUR — Utilisateur (D1, Compte identifié par son téléphone (RF-01), rattaché à une zone et éventuellement à une organisation.)
+  UTILISATEUR {
+    uuid id PK
+    varchar telephone UK
+    varchar email UK
+    varchar nom
+    varchar prenom
+    text mot_de_passe_hash
+    varchar langue
+    varchar statut
+    timestamptz consentement_le
+    timestamptz date_inscription
+  }
+  %% ROLE — Rôle (D1, Référentiel des rôles : exploitant, agent, coopérative, IMF, MAEP, BNGRC, administrateur (RF-02).)
+  ROLE {
+    varchar code PK
+    varchar libelle
+    text description
+  }
+  %% UTILISATEUR_ROLE — Affectation de rôle (D1, Association-entité : un utilisateur peut cumuler des rôles, avec un périmètre géographique (RG-07).)
+  UTILISATEUR_ROLE {
+    uuid id PK
+    timestamptz date_attribution
+    boolean actif
+  }
+  %% APPAREIL — Appareil (D1, Terminal Android ou navigateur utilisé pour la synchronisation hors ligne (RF-46).)
+  APPAREIL {
+    uuid id PK
+    varchar identifiant_appareil UK
+    varchar plateforme
+    varchar version_app
+    timestamptz derniere_sync
+  }
+  %% PARAMETRE — Paramètre (D1, Paramétrage des régions, saisons, variétés et seuils (RF-50), modifiable par un administrateur.)
+  PARAMETRE {
+    varchar cle PK
+    text valeur
+    varchar type_valeur
+    varchar libelle
+    timestamptz modifie_le
+  }
+  %% SEUIL_ALERTE — Seuil d'alerte (D1, Seuils pluviométriques par zone utilisés pour qualifier la sécheresse (RF-25, RF-50).)
+  SEUIL_ALERTE {
+    uuid id PK
+    varchar type_alerte
+    numeric cumul_10j_mm
+    numeric cumul_20j_mm
+    varchar niveau
+    boolean actif
+  }
+  %% JOURNAL_AUDIT — Journal d'audit (D1, Traçabilité des actions, des synchronisations et des accès (RF-49).)
+  JOURNAL_AUDIT {
+    bigserial id PK
+    varchar action
+    varchar entite
+    uuid entite_id
+    jsonb details
+    inet adresse_ip
+    timestamptz date_action
+  }
+  %% SYNCHRONISATION — Synchronisation (D1, Journal des remontées hors ligne (RF-46) : volume, durée, conflits éventuels.)
+  SYNCHRONISATION {
+    uuid id PK
+    timestamptz debut_le
+    timestamptz fin_le
+    integer nb_enregistrements
+    varchar statut
+  }
+  %% EXPLOITATION — Exploitation (D2, Unité de production d'un exploitant dans un Fokontany (RF-05).)
+  EXPLOITATION {
+    uuid id PK
+    varchar code UK
+    varchar nom
+    varchar telephone
+    numeric superficie_totale_ha
+    varchar statut
+  }
+  %% PARCELLE — Parcelle (D2, Rizière localisée et géométrisée (RF-05, RF-08), support du calendrier et des sinistres.)
+  PARCELLE {
+    uuid id PK
+    varchar code
+    numeric superficie_ha
+    varchar type_riziculture
+    numeric latitude
+    numeric longitude
+    geometry geometrie
+    varchar statut
+  }
+  %% VARIETE — Variété de riz (D2, Référentiel des variétés (RF-07, RF-50) : durée de cycle et potentiel de rendement.)
+  VARIETE {
+    uuid id PK
+    varchar nom UK
+    integer cycle_jours
+    numeric rendement_potentiel_t_ha
+    text description
+    boolean actif
+  }
+  %% CAMPAGNE — Campagne rizicole (D2, Période de production (grande saison / contre-saison) servant de référentiel temporel (RF-07, RF-37).)
+  CAMPAGNE {
+    uuid id PK
+    varchar libelle UK
+    date date_debut
+    date date_fin
+    varchar saison
+    varchar statut
+  }
+  %% CYCLE_CULTURAL — Cycle cultural (D2, Culture d'une variété sur une parcelle pendant une campagne : point d'entrée du calendrier (RG-01).)
+  CYCLE_CULTURAL {
+    uuid id PK
+    date date_debut
+    date date_fin_prevue
+    varchar statut
+  }
+  %% ETAPE_CULTURELLE — Étape culturelle (D2, Référentiel des étapes : travail du sol, semis, repiquage, sarclage, moisson, battage (RF-09, RF-14).)
+  ETAPE_CULTURELLE {
+    varchar code PK
+    varchar libelle
+    integer ordre
+    integer delai_min_jours
+    integer delai_max_jours
+    text description
+  }
+  %% ETAPE_PLANIFIEE — Étape planifiée (D2, Occurrence datée d'une étape pour un cycle (RF-09, RF-12), base des rappels.)
+  ETAPE_PLANIFIEE {
+    uuid id PK
+    date date_prevue
+    date date_reelle
+    varchar statut
+  }
+  %% DECALAGE — Décalage de calendrier (D2, Proposition de report d'une étape, jamais appliquée sans validation (RF-11, RG-05).)
+  DECALAGE {
+    uuid id PK
+    date date_proposee
+    varchar motif
+    varchar source
+    varchar statut
+    timestamptz date_validation
+  }
+  %% RECOLTE — Récolte (D2, Déclaration de récolte d'un cycle et rendement calculé en t/ha (RF-07, RF-37).)
+  RECOLTE {
+    uuid id PK
+    date date_recolte
+    numeric quantite_paddy_kg
+    numeric rendement_t_ha
+    varchar qualite
+  }
+  %% POSSESSION_MATERIEL — Matériel possédé (D2, Matériel déclaré par une exploitation (RF-06), utilisé pour personnaliser les conseils (RF-19, RF-39).)
+  POSSESSION_MATERIEL {
+    uuid id PK
+    integer quantite
+    integer annee_acquisition
+  }
+  %% FICHE_TECHNIQUE — Fiche technique (D3, Fiche pratique par étape : technique, outil traditionnel et outil moderne équivalent (RF-14, RF-16, RF-47).)
+  FICHE_TECHNIQUE {
+    uuid id PK
+    varchar titre_mg
+    varchar titre_fr
+    text resume_mg
+    text resume_fr
+    varchar outil_traditionnel
+    varchar outil_moderne
+    varchar statut
+    timestamptz date_publication
+  }
+  %% MEDIA — Média (D3, Illustration, vidéo courte ou lecture audio d'une fiche, par langue (RF-15).)
+  MEDIA {
+    uuid id PK
+    varchar type_media
+    text url
+    varchar legende
+    varchar langue
+    integer duree_s
+  }
+  %% FORMATION — Module de formation (D3, Formation courte avec quiz et suivi de progression (RF-17).)
+  FORMATION {
+    uuid id PK
+    varchar titre
+    text description
+    integer duree_min
+    varchar niveau
+    varchar statut
+  }
+  %% QUESTION — Question de quiz (D3, Question d'évaluation rattachée à un module de formation (RF-17).)
+  QUESTION {
+    uuid id PK
+    text enonce
+    integer ordre
+    integer points
+  }
+  %% CHOIX_REPONSE — Choix de réponse (D3, Proposition de réponse, une seule correcte par question (RF-17).)
+  CHOIX_REPONSE {
+    uuid id PK
+    varchar libelle
+    boolean correcte
+    integer ordre
+  }
+  %% INSCRIPTION_FORMATION — Inscription à une formation (D3, Suivi individuel : progression et score (RF-17).)
+  INSCRIPTION_FORMATION {
+    uuid id PK
+    timestamptz date_inscription
+    integer progression_pct
+    integer score
+    varchar statut
+  }
+  %% ALERTE — Alerte (D4, Alerte climatique ou sanitaire émise par le BNGRC ou la météo, prioritaire sur tout autre message (RF-20 à RF-23, RG-04).)
+  ALERTE {
+    uuid id PK
+    varchar type_alerte
+    varchar niveau
+    varchar titre
+    text message_mg
+    text message_fr
+    text consignes_mg
+    text consignes_fr
+    integer priorite
+    timestamptz date_emission
+    timestamptz date_fin
+    varchar statut
+  }
+  %% CIBLAGE_ALERTE — Ciblage d'alerte (D4, Zones couvertes par une alerte (RF-23) ; une alerte peut viser plusieurs communes.)
+  CIBLAGE_ALERTE {
+    uuid id PK
+  }
+  %% NOTIFICATION — Notification (D4, Message envoyé à un utilisateur par push, SMS ou USSD, avec accusé de réception (RF-12, RF-21, RF-24).)
+  NOTIFICATION {
+    uuid id PK
+    varchar canal
+    varchar titre
+    text message
+    varchar statut
+    timestamptz date_envoi
+    timestamptz date_lecture
+  }
+  %% DONNEE_PLUVIOMETRIQUE — Donnée pluviométrique (D4, Relevé journalier par zone, base du calcul du déficit de pluie (RF-25).)
+  DONNEE_PLUVIOMETRIQUE {
+    uuid id PK
+    date date_mesure
+    numeric pluie_mm
+    varchar source
+  }
+  %% MESSAGE_SENSIBILISATION — Message de sensibilisation (D4, Message de sensibilisation ciblé par commune ou Fokontany (RF-18).)
+  MESSAGE_SENSIBILISATION {
+    uuid id PK
+    varchar titre
+    text contenu_mg
+    text contenu_fr
+    date date_debut
+    date date_fin
+    varchar statut
+  }
+  %% CIBLAGE_MESSAGE — Ciblage de message (D4, Zones destinataires d'un message de sensibilisation (RF-18).)
+  CIBLAGE_MESSAGE {
+    uuid id PK
+  }
+  %% TYPE_MATERIEL — Type de matériel (D5, Référentiel des équipements : angady, charrue, herse, motoculteur, sarcleuse, faucille, batteuse (RF-06, RF-16, RF-26).)
+  TYPE_MATERIEL {
+    uuid id PK
+    varchar code UK
+    varchar libelle
+    varchar categorie
+    text description
+  }
+  %% EQUIPEMENT — Équipement (D5, Matériel réel mis à disposition par le CFAMA, une coopérative, une ONG ou un Fokontany (RF-26 à RF-29).)
+  EQUIPEMENT {
+    uuid id PK
+    varchar libelle
+    varchar mode
+    numeric tarif_journalier_mga
+    varchar etat
+    integer quantite
+  }
+  %% RESERVATION — Réservation (D5, Demande de location ou de prêt sur une période, confirmée par le propriétaire (RF-27, RF-28).)
+  RESERVATION {
+    uuid id PK
+    date date_debut
+    date date_fin
+    varchar statut
+    timestamptz date_demande
+    timestamptz date_reponse
+    varchar motif_refus
+  }
+  %% MAINTENANCE — Maintenance (D5, Suivi de l'état et des interventions sur le matériel (RF-29).)
+  MAINTENANCE {
+    uuid id PK
+    date date_intervention
+    varchar type_maintenance
+    numeric cout_mga
+    text description
+    varchar statut
+  }
+  %% GCV — Grenier communautaire (GCV) (D6, Grenier Commun Villageois : membres, dépôts, retraits et valeur du stock (RF-31).)
+  GCV {
+    uuid id PK
+    varchar nom
+    numeric capacite_t
+    text reglement
+    date date_ouverture
+    varchar statut
+  }
+  %% MEMBRE_GCV — Membre de GCV (D6, Adhésion d'une exploitation à un grenier, avec rôle interne (RF-31).)
+  MEMBRE_GCV {
+    uuid id PK
+    varchar role_membre
+    date date_adhesion
+    varchar statut
+  }
+  %% DECISION_COLLECTIVE — Décision collective (D6, Décision de l'assemblée du grenier autorisant un retrait ou une mise en garantie (RG-06).)
+  DECISION_COLLECTIVE {
+    uuid id PK
+    varchar objet
+    date date_decision
+    integer quorum_pct
+    text proces_verbal
+  }
+  %% MOUVEMENT_STOCK — Mouvement de stock (D6, Dépôt ou retrait de paddy, avec reçu numérique et décision collective éventuelle (RF-31, RF-32, RG-06).)
+  MOUVEMENT_STOCK {
+    uuid id PK
+    varchar type_mouvement
+    numeric quantite_kg
+    varchar qualite
+    timestamptz date_mouvement
+  }
+  %% RECU — Reçu numérique (D6, Reçu remis pour chaque dépôt ou retrait (RF-32), numéro unique et PDF archivable.)
+  RECU {
+    uuid id PK
+    varchar numero UK
+    timestamptz date_emission
+    text url_pdf
+  }
+  %% DEMANDE_CREDIT — Demande de crédit (D6, Dossier de crédit de campagne déposé auprès d'une IMF, avec le stock comme garantie (RF-33).)
+  DEMANDE_CREDIT {
+    uuid id PK
+    numeric montant_demande_mga
+    numeric montant_accorde_mga
+    varchar objet
+    varchar statut
+    date date_demande
+    date date_decision
+  }
+  %% GARANTIE_STOCK — Garantie en stock (D6, Stock de paddy affecté en garantie d'un crédit (RF-33), valorisé au prix du marché.)
+  GARANTIE_STOCK {
+    uuid id PK
+    numeric quantite_kg
+    numeric valeur_mga
+  }
+  %% PRIX_MARCHE — Prix du marché (D6, Relevé de prix du riz par marché et par variété (RF-34, RF-35).)
+  PRIX_MARCHE {
+    uuid id PK
+    date date_releve
+    numeric prix_kg_mga
+    varchar marche
+    varchar source
+  }
+  %% SINISTRE — Sinistre (D7, Déclaration d'inondation, cyclone, sécheresse ou ravageurs avec photo et position (RF-42, RF-43).)
+  SINISTRE {
+    uuid id PK
+    varchar type_sinistre
+    date date_survenance
+    numeric superficie_touchee_ha
+    text description
+    numeric latitude
+    numeric longitude
+    varchar statut
+    timestamptz date_transmission
+  }
+  %% PHOTO_SINISTRE — Photo de sinistre (D7, Preuve photographique d'un sinistre (RF-42), collectée même hors ligne puis synchronisée.)
+  PHOTO_SINISTRE {
+    uuid id PK
+    text url
+    timestamptz date_prise
+  }
+  %% INFRASTRUCTURE — Ouvrage hydraulique (D7, Digue, barrage ou canal d'irrigation à entretenir (RF-44, RF-45).)
+  INFRASTRUCTURE {
+    uuid id PK
+    varchar nom
+    varchar type_infrastructure
+    numeric longueur_m
+    varchar etat
+    numeric latitude
+    numeric longitude
+  }
+  %% SIGNALEMENT_INFRA — Signalement d’ouvrage (D7, Signalement d'une infrastructure à réparer, suivi jusqu'à la réparation (RF-44).)
+  SIGNALEMENT_INFRA {
+    uuid id PK
+    text description
+    varchar gravite
+    varchar statut
+    timestamptz date_signalement
+    timestamptz date_traitement
+    text url_photo
+  }
+  %% RAPPORT_VISITE — Rapport de visite (D7, Compte rendu de la visite d'un agent de terrain : exploitants rencontrés, conseils donnés (RF-41).)
+  RAPPORT_VISITE {
+    uuid id PK
+    date date_visite
+    integer duree_min
+    text conseils
+    integer nb_exploitants
+  }
+  ZONE o{--o| ZONE : "A01 CONTIENT (0,n / 0,1)"
+  ORGANISATION o{--o| ZONE : "A02 SIÈGE_DANS (0,n / 0,1)"
+  UTILISATEUR o{--|| ZONE : "A03 RÉSIDE (0,n / 1,1)"
+  UTILISATEUR o{--o| ORGANISATION : "A04 TRAVAILLE_POUR (0,n / 0,1)"
+  UTILISATEUR o{--|| UTILISATEUR_ROLE : "A05 POSSÈDE (0,n / 1,1)"
+  ROLE o{--|| UTILISATEUR_ROLE : "A06 EST_TITULAIRE_DE (0,n / 1,1)"
+  UTILISATEUR o{--|| APPAREIL : "A07 UTILISE (0,n / 1,1)"
+  UTILISATEUR o{--o| JOURNAL_AUDIT : "A08 GÉNÈRE (0,n / 0,1)"
+  UTILISATEUR o{--o| PARAMETRE : "A09 MODIFIE (0,n / 0,1)"
+  ZONE o{--|| SEUIL_ALERTE : "A10 DISPOSE_DE (0,n / 1,1)"
+  ORGANISATION o{--o| GCV : "A11 GÈRE (0,n / 0,1)"
+  UTILISATEUR o{--|| GCV : "A12 RESPONSABLE_DE (0,n / 1,1)"
+  ZONE o{--|| GCV : "A13 ABRITE (0,n / 1,1)"
+  UTILISATEUR o{--|| EXPLOITATION : "A14 DÉTIENT (0,n / 1,1)"
+  ZONE o{--|| EXPLOITATION : "A15 SITUE (0,n / 1,1)"
+  EXPLOITATION o{--|| PARCELLE : "A16 COMPORTE (0,n / 1,1)"
+  ZONE o{--o| CAMPAGNE : "A17 CONCERNE (0,n / 0,1)"
+  CAMPAGNE o{--|| CYCLE_CULTURAL : "A18 ORGANISE (0,n / 1,1)"
+  PARCELLE o{--|| CYCLE_CULTURAL : "A19 SUPPORTE (0,n / 1,1)"
+  VARIETE o{--|| CYCLE_CULTURAL : "A20 CARACTÉRISE (0,n / 1,1)"
+  CYCLE_CULTURAL o{--|| ETAPE_PLANIFIEE : "A21 PLANIFIE (0,n / 1,1)"
+  ETAPE_CULTURELLE o{--|| ETAPE_PLANIFIEE : "A22 INSTANCIE (0,n / 1,1)"
+  ETAPE_PLANIFIEE o{--|| DECALAGE : "A23 FAIT_L_OBJET_DE (0,n / 1,1)"
+  UTILISATEUR o{--o| DECALAGE : "A24 VALIDE (0,n / 0,1)"
+  CYCLE_CULTURAL o|--|| RECOLTE : "A25 PRODUIT (0,1 / 1,1)"
+  UTILISATEUR o{--|| RECOLTE : "A26 DÉCLARE (0,n / 1,1)"
+  EXPLOITATION o{--|| POSSESSION_MATERIEL : "A27 DÉCLARE (0,n / 1,1)"
+  TYPE_MATERIEL o{--|| POSSESSION_MATERIEL : "A28 CONCERNE (0,n / 1,1)"
+  ETAPE_CULTURELLE o{--|| FICHE_TECHNIQUE : "A29 DOCUMENTE (0,n / 1,1)"
+  FICHE_TECHNIQUE o{--|| MEDIA : "A30 ILLUSTRE (0,n / 1,1)"
+  FICHE_TECHNIQUE o|--o{ FORMATION : "A31 ACCOMPAGNE (0,1 / 0,n)"
+  FORMATION o{--|| QUESTION : "A32 ÉVALUE (0,n / 1,1)"
+  QUESTION o{--|| CHOIX_REPONSE : "A33 PROPOSE (0,n / 1,1)"
+  UTILISATEUR o{--|| INSCRIPTION_FORMATION : "A34 SUIT (0,n / 1,1)"
+  FORMATION o{--|| INSCRIPTION_FORMATION : "A35 ACCUEILLE (0,n / 1,1)"
+  UTILISATEUR o{--o| FICHE_TECHNIQUE : "A36 RÉDIGE (0,n / 0,1)"
+  UTILISATEUR o{--o| ALERTE : "A37 ÉMET (0,n / 0,1)"
+  ALERTE o{--|| CIBLAGE_ALERTE : "A38 VISE (0,n / 1,1)"
+  ZONE o{--|| CIBLAGE_ALERTE : "A39 EST_CIBLEE (0,n / 1,1)"
+  ALERTE o{--o| NOTIFICATION : "A40 DÉCLENCHE (0,n / 0,1)"
+  UTILISATEUR o{--|| NOTIFICATION : "A41 REÇOIT (0,n / 1,1)"
+  ETAPE_PLANIFIEE o{--o| NOTIFICATION : "A42 RAPPELLE (0,n / 0,1)"
+  ZONE o{--|| DONNEE_PLUVIOMETRIQUE : "A43 MESURE (0,n / 1,1)"
+  UTILISATEUR o{--o| MESSAGE_SENSIBILISATION : "A44 PUBLIE (0,n / 0,1)"
+  MESSAGE_SENSIBILISATION o{--|| CIBLAGE_MESSAGE : "A45 VISE (0,n / 1,1)"
+  ZONE o{--|| CIBLAGE_MESSAGE : "A46 EST_DESTINATAIRE (0,n / 1,1)"
+  ZONE o{--|| PRIX_MARCHE : "A47 PUBLIE (0,n / 1,1)"
+  VARIETE o{--|| PRIX_MARCHE : "A48 COTE (0,n / 1,1)"
+  CAMPAGNE o{--|| PRIX_MARCHE : "A49 SITUE (0,n / 1,1)"
+  TYPE_MATERIEL o{--|| EQUIPEMENT : "A50 TYPOLOGIE (0,n / 1,1)"
+  ORGANISATION o{--o| EQUIPEMENT : "A51 PROPOSE (0,n / 0,1)"
+  ZONE o{--|| EQUIPEMENT : "A52 LOCALISE (0,n / 1,1)"
+  EQUIPEMENT o{--|| RESERVATION : "A53 EST_RÉSERVÉ (0,n / 1,1)"
+  UTILISATEUR o{--|| RESERVATION : "A54 DEMANDE (0,n / 1,1)"
+  EQUIPEMENT o{--|| MAINTENANCE : "A55 SUBIT (0,n / 1,1)"
+  EXPLOITATION o{--|| MEMBRE_GCV : "A56 ADHÈRE (0,n / 1,1)"
+  GCV o{--|| MEMBRE_GCV : "A57 COMPTE (0,n / 1,1)"
+  MEMBRE_GCV o{--|| MOUVEMENT_STOCK : "A58 EFFECTUE (0,n / 1,1)"
+  MOUVEMENT_STOCK o|--|| RECU : "A59 JUSTIFIE (0,1 / 1,1)"
+  UTILISATEUR o{--|| MOUVEMENT_STOCK : "A60 ENREGISTRE (0,n / 1,1)"
+  DECISION_COLLECTIVE o{--o| MOUVEMENT_STOCK : "A61 AUTORISE (0,n / 0,1)"
+  GCV o{--|| DECISION_COLLECTIVE : "A62 TIENT (0,n / 1,1)"
+  UTILISATEUR o{--|| DECISION_COLLECTIVE : "A63 SECRÈTE (0,n / 1,1)"
+  EXPLOITATION o{--|| DEMANDE_CREDIT : "A64 SOLLICITE (0,n / 1,1)"
+  ORGANISATION o{--|| DEMANDE_CREDIT : "A65 INSTRUIT (0,n / 1,1)"
+  CAMPAGNE o{--|| DEMANDE_CREDIT : "A66 FINANCE (0,n / 1,1)"
+  UTILISATEUR o{--o| DEMANDE_CREDIT : "A67 SUIT (0,n / 0,1)"
+  DEMANDE_CREDIT o{--|| GARANTIE_STOCK : "A68 EST_GARANTIE_PAR (0,n / 1,1)"
+  GCV o{--|| GARANTIE_STOCK : "A69 NANTIT (0,n / 1,1)"
+  PARCELLE o{--|| SINISTRE : "A70 SUBIT (0,n / 1,1)"
+  ALERTE o{--o| SINISTRE : "A71 PROVOQUE (0,n / 0,1)"
+  UTILISATEUR o{--|| SINISTRE : "A72 SIGNALE (0,n / 1,1)"
+  SINISTRE o{--|| PHOTO_SINISTRE : "A73 CONTIENT (0,n / 1,1)"
+  ZONE o{--|| INFRASTRUCTURE : "A74 SITUE (0,n / 1,1)"
+  INFRASTRUCTURE o{--|| SIGNALEMENT_INFRA : "A75 FAIT_L_OBJET_DE (0,n / 1,1)"
+  UTILISATEUR o{--|| SIGNALEMENT_INFRA : "A76 ÉMET (0,n / 1,1)"
+  UTILISATEUR o{--|| RAPPORT_VISITE : "A77 RÉDIGE (0,n / 1,1)"
+  EXPLOITATION o{--|| RAPPORT_VISITE : "A78 CONCERNE (0,n / 1,1)"
+  APPAREIL o{--|| SYNCHRONISATION : "A79 DÉCLENCHE (0,n / 1,1)"

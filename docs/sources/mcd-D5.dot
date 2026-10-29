@@ -1,0 +1,68 @@
+digraph MCD {
+  graph [rankdir=TB, splines=true, overlap=false, nodesep=0.35, ranksep=1.0, pad=0.35, bgcolor="white", fontname="Helvetica", labelloc="b", labeljust="l",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#94a3b8">
+        <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9"><B>MCD — D5 Matériel agricole</B> <FONT POINT-SIZE="9">· vue détaillée (modules M6)</FONT></TD></TR>
+        
+      </TABLE>>];
+  node [fontname="Helvetica", fontsize=9, margin=0];
+  edge [fontname="Helvetica", fontsize=7.5, color="#64748b", fontcolor="#334155", penwidth=1.1, arrowsize=0.7];
+
+  subgraph cluster_D5 {
+    label=<<B>D5 — Matériel agricole</B><BR/><FONT POINT-SIZE="8">Modules M6</FONT>>;
+    fontsize=11; fontcolor="#7c3aed"; color="#7c3aed"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#ffffff";
+  TYPE_MATERIEL [shape=plaintext, tooltip="Référentiel des équipements : angady, charrue, herse, motoculteur, sarcleuse, faucille, batteuse (RF-06, RF-16, RF-26).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#7c3aed" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#ede9fe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>TYPE_MATERIEL</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Type de matériel</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">code <FONT COLOR="#64748b">: varchar(32)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">libelle <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">categorie <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR>
+    </TABLE>>];
+  EQUIPEMENT [shape=plaintext, tooltip="Matériel réel mis à disposition par le CFAMA, une coopérative, une ONG ou un Fokontany (RF-26 à RF-29).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#7c3aed" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#ede9fe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>EQUIPEMENT</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Équipement</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">libelle <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">mode <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">tarif_journalier_mga <FONT COLOR="#64748b">: numeric(10,0)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">etat <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">quantite <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR>
+    </TABLE>>];
+  RESERVATION [shape=plaintext, tooltip="Demande de location ou de prêt sur une période, confirmée par le propriétaire (RF-27, RF-28).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#7c3aed" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#ede9fe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>RESERVATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Réservation</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_debut <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_fin <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_demande <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_reponse <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">motif_refus <FONT COLOR="#64748b">: varchar(240)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  MAINTENANCE [shape=plaintext, tooltip="Suivi de l'état et des interventions sur le matériel (RF-29).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#7c3aed" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#ede9fe" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>MAINTENANCE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Maintenance</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_intervention <FONT COLOR="#64748b">: date</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_maintenance <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">cout_mga <FONT COLOR="#64748b">: numeric(10,0)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">description <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  subgraph cluster_CTX {
+    label=<<B>Entités de contexte (autres domaines)</B>>;
+    fontsize=9; fontcolor="#94a3b8"; color="#94a3b8"; style="rounded,dashed"; penwidth=1.2; margin=14; bgcolor="#f8fafc";
+  ZONE [shape=plaintext, tooltip="Découpage région → district → commune → Fokontany (RF-03). Relation réflexive pour la hiérarchie.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ZONE</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Zone administrative</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">code <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(120)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_zone <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">population <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  ORGANISATION [shape=plaintext, tooltip="Coopérative, IMF, ONG, CFAMA, MAEP, BNGRC ou service météo (RF-02, RF-26, RF-33).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>ORGANISATION</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Organisation partenaire</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">type_organisation <FONT COLOR="#64748b">: varchar(24)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">actif <FONT COLOR="#64748b">: boolean</FONT></FONT></TD></TR>
+    </TABLE>>];
+  UTILISATEUR [shape=plaintext, tooltip="Compte identifié par son téléphone (RF-01), rattaché à une zone et éventuellement à une organisation.", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>UTILISATEUR</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Utilisateur</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">telephone <FONT COLOR="#64748b">: varchar(20)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">email <FONT COLOR="#64748b">: varchar(160)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">nom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">prenom <FONT COLOR="#64748b">: varchar(80)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">mot_de_passe_hash <FONT COLOR="#64748b">: text</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">langue <FONT COLOR="#64748b">: varchar(2)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">statut <FONT COLOR="#64748b">: varchar(16)</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">consentement_le <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">date_inscription <FONT COLOR="#64748b">: timestamptz</FONT></FONT></TD></TR>
+    </TABLE>>];
+  POSSESSION_MATERIEL [shape=plaintext, tooltip="Matériel déclaré par une exploitation (RF-06), utilisé pour personnaliser les conseils (RF-19, RF-39).", label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="3" COLOR="#94a3b8" BGCOLOR="#ffffff">
+      <TR><TD BGCOLOR="#f1f5f9" ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="9.5"><B>POSSESSION_MATERIEL</B></FONT><BR/><FONT POINT-SIZE="7.5" COLOR="#334155">Matériel possédé</FONT></TD></TR>
+      <TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8"><U><B>id</B></U> <FONT COLOR="#64748b">: uuid</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">quantite <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"><FONT POINT-SIZE="8">annee_acquisition <FONT COLOR="#64748b">: integer</FONT></FONT></TD></TR>
+    </TABLE>>];
+  }
+
+  TYPE_MATERIEL -> POSSESSION_MATERIEL [label=<<FONT POINT-SIZE="7">CONCERNE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A28 — RF-06"];
+  TYPE_MATERIEL -> EQUIPEMENT [label=<<FONT POINT-SIZE="7">TYPOLOGIE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A50 — RF-26"];
+  ORGANISATION -> EQUIPEMENT [label=<<FONT POINT-SIZE="7">PROPOSE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>0,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A51 — RF-26"];
+  ZONE -> EQUIPEMENT [label=<<FONT POINT-SIZE="7">LOCALISE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A52 — RF-26"];
+  EQUIPEMENT -> RESERVATION [label=<<FONT POINT-SIZE="7">EST_RÉSERVÉ</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A53 — RF-27"];
+  UTILISATEUR -> RESERVATION [label=<<FONT POINT-SIZE="7">DEMANDE</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A54 — RF-27"];
+  EQUIPEMENT -> MAINTENANCE [label=<<FONT POINT-SIZE="7">SUBIT</FONT>>, taillabel=<<B>0,n</B>>, headlabel=<<B>1,1</B>>, labeldistance=1.1, labelangle=0, taillabeldistance=1.6, headlabeldistance=1.6, tooltip="A55 — RF-29"];
+}

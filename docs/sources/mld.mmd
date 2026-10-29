@@ -1,0 +1,576 @@
+erDiagram
+  %% zone — Zone administrative
+  ZONE {
+    uuid id PK
+    varchar code UK
+    varchar nom
+    varchar type_zone
+    integer population
+    boolean actif
+    uuid parent_id FK
+  }
+  %% organisation — Organisation partenaire
+  ORGANISATION {
+    uuid id PK
+    varchar nom
+    varchar type_organisation
+    varchar telephone
+    varchar email
+    boolean actif
+    uuid zone_id FK
+  }
+  %% utilisateur — Utilisateur
+  UTILISATEUR {
+    uuid id PK
+    varchar telephone UK
+    varchar email UK
+    varchar nom
+    varchar prenom
+    text mot_de_passe_hash
+    varchar langue
+    varchar statut
+    timestamptz consentement_le
+    timestamptz date_inscription
+    uuid zone_id FK
+    uuid organisation_id FK
+  }
+  %% role — Rôle
+  ROLE {
+    varchar code PK
+    varchar libelle
+    text description
+  }
+  %% utilisateur_role — Affectation de rôle
+  UTILISATEUR_ROLE {
+    uuid id PK
+    timestamptz date_attribution
+    boolean actif
+    uuid utilisateur_id FK
+    varchar role_id FK
+  }
+  %% appareil — Appareil
+  APPAREIL {
+    uuid id PK
+    varchar identifiant_appareil UK
+    varchar plateforme
+    varchar version_app
+    timestamptz derniere_sync
+    uuid utilisateur_id FK
+  }
+  %% parametre — Paramètre
+  PARAMETRE {
+    varchar cle PK
+    text valeur
+    varchar type_valeur
+    varchar libelle
+    timestamptz modifie_le
+    uuid modifie_par_id FK
+  }
+  %% seuil_alerte — Seuil d'alerte
+  SEUIL_ALERTE {
+    uuid id PK
+    varchar type_alerte
+    numeric cumul_10j_mm
+    numeric cumul_20j_mm
+    varchar niveau
+    boolean actif
+    uuid zone_id FK
+  }
+  %% journal_audit — Journal d'audit
+  JOURNAL_AUDIT {
+    bigserial id PK
+    varchar action
+    varchar entite
+    uuid entite_id
+    jsonb details
+    inet adresse_ip
+    timestamptz date_action
+    uuid utilisateur_id FK
+  }
+  %% synchronisation — Synchronisation
+  SYNCHRONISATION {
+    uuid id PK
+    timestamptz debut_le
+    timestamptz fin_le
+    integer nb_enregistrements
+    varchar statut
+    uuid appareil_id FK
+  }
+  %% exploitation — Exploitation
+  EXPLOITATION {
+    uuid id PK
+    varchar code UK
+    varchar nom
+    varchar telephone
+    numeric superficie_totale_ha
+    varchar statut
+    uuid proprietaire_id FK
+    uuid zone_id FK
+  }
+  %% parcelle — Parcelle
+  PARCELLE {
+    uuid id PK
+    varchar code
+    numeric superficie_ha
+    varchar type_riziculture
+    numeric latitude
+    numeric longitude
+    geometry geometrie
+    varchar statut
+    uuid exploitation_id FK
+  }
+  %% variete — Variété de riz
+  VARIETE {
+    uuid id PK
+    varchar nom UK
+    integer cycle_jours
+    numeric rendement_potentiel_t_ha
+    text description
+    boolean actif
+  }
+  %% campagne — Campagne rizicole
+  CAMPAGNE {
+    uuid id PK
+    varchar libelle UK
+    date date_debut
+    date date_fin
+    varchar saison
+    varchar statut
+    uuid zone_id FK
+  }
+  %% cycle_cultural — Cycle cultural
+  CYCLE_CULTURAL {
+    uuid id PK
+    date date_debut
+    date date_fin_prevue
+    varchar statut
+    uuid campagne_id FK
+    uuid parcelle_id FK
+    uuid variete_id FK
+  }
+  %% etape_culturelle — Étape culturelle
+  ETAPE_CULTURELLE {
+    varchar code PK
+    varchar libelle
+    integer ordre
+    integer delai_min_jours
+    integer delai_max_jours
+    text description
+  }
+  %% etape_planifiee — Étape planifiée
+  ETAPE_PLANIFIEE {
+    uuid id PK
+    date date_prevue
+    date date_reelle
+    varchar statut
+    uuid cycle_id FK
+    varchar etape_code FK
+  }
+  %% decalage — Décalage de calendrier
+  DECALAGE {
+    uuid id PK
+    date date_proposee
+    varchar motif
+    varchar source
+    varchar statut
+    timestamptz date_validation
+    uuid etape_planifiee_id FK
+    uuid valide_par_id FK
+  }
+  %% recolte — Récolte
+  RECOLTE {
+    uuid id PK
+    date date_recolte
+    numeric quantite_paddy_kg
+    numeric rendement_t_ha
+    varchar qualite
+    uuid cycle_id FK
+    uuid declare_par_id FK
+  }
+  %% possession_materiel — Matériel possédé
+  POSSESSION_MATERIEL {
+    uuid id PK
+    integer quantite
+    integer annee_acquisition
+    uuid exploitation_id FK
+    uuid type_materiel_id FK
+  }
+  %% fiche_technique — Fiche technique
+  FICHE_TECHNIQUE {
+    uuid id PK
+    varchar titre_mg
+    varchar titre_fr
+    text resume_mg
+    text resume_fr
+    varchar outil_traditionnel
+    varchar outil_moderne
+    varchar statut
+    timestamptz date_publication
+    varchar etape_code FK
+    uuid auteur_id FK
+  }
+  %% media — Média
+  MEDIA {
+    uuid id PK
+    varchar type_media
+    text url
+    varchar legende
+    varchar langue
+    integer duree_s
+    uuid fiche_id FK
+  }
+  %% formation — Module de formation
+  FORMATION {
+    uuid id PK
+    varchar titre
+    text description
+    integer duree_min
+    varchar niveau
+    varchar statut
+    uuid fiche_id FK
+  }
+  %% question — Question de quiz
+  QUESTION {
+    uuid id PK
+    text enonce
+    integer ordre
+    integer points
+    uuid formation_id FK
+  }
+  %% choix_reponse — Choix de réponse
+  CHOIX_REPONSE {
+    uuid id PK
+    varchar libelle
+    boolean correcte
+    integer ordre
+    uuid question_id FK
+  }
+  %% inscription_formation — Inscription à une formation
+  INSCRIPTION_FORMATION {
+    uuid id PK
+    timestamptz date_inscription
+    integer progression_pct
+    integer score
+    varchar statut
+    uuid utilisateur_id FK
+    uuid formation_id FK
+  }
+  %% alerte — Alerte
+  ALERTE {
+    uuid id PK
+    varchar type_alerte
+    varchar niveau
+    varchar titre
+    text message_mg
+    text message_fr
+    text consignes_mg
+    text consignes_fr
+    integer priorite
+    timestamptz date_emission
+    timestamptz date_fin
+    varchar statut
+    uuid emetteur_id FK
+  }
+  %% ciblage_alerte — Ciblage d'alerte
+  CIBLAGE_ALERTE {
+    uuid id PK
+    uuid alerte_id FK
+    uuid zone_id FK
+  }
+  %% notification — Notification
+  NOTIFICATION {
+    uuid id PK
+    varchar canal
+    varchar titre
+    text message
+    varchar statut
+    timestamptz date_envoi
+    timestamptz date_lecture
+    uuid alerte_id FK
+    uuid utilisateur_id FK
+    uuid etape_planifiee_id FK
+  }
+  %% donnee_pluviometrique — Donnée pluviométrique
+  DONNEE_PLUVIOMETRIQUE {
+    uuid id PK
+    date date_mesure
+    numeric pluie_mm
+    varchar source
+    uuid zone_id FK
+  }
+  %% message_sensibilisation — Message de sensibilisation
+  MESSAGE_SENSIBILISATION {
+    uuid id PK
+    varchar titre
+    text contenu_mg
+    text contenu_fr
+    date date_debut
+    date date_fin
+    varchar statut
+    uuid auteur_id FK
+  }
+  %% ciblage_message — Ciblage de message
+  CIBLAGE_MESSAGE {
+    uuid id PK
+    uuid message_id FK
+    uuid zone_id FK
+  }
+  %% type_materiel — Type de matériel
+  TYPE_MATERIEL {
+    uuid id PK
+    varchar code UK
+    varchar libelle
+    varchar categorie
+    text description
+  }
+  %% equipement — Équipement
+  EQUIPEMENT {
+    uuid id PK
+    varchar libelle
+    varchar mode
+    numeric tarif_journalier_mga
+    varchar etat
+    integer quantite
+    uuid type_materiel_id FK
+    uuid proprietaire_org_id FK
+    uuid zone_id FK
+  }
+  %% reservation — Réservation
+  RESERVATION {
+    uuid id PK
+    date date_debut
+    date date_fin
+    varchar statut
+    timestamptz date_demande
+    timestamptz date_reponse
+    varchar motif_refus
+    uuid equipement_id FK
+    uuid demandeur_id FK
+  }
+  %% maintenance — Maintenance
+  MAINTENANCE {
+    uuid id PK
+    date date_intervention
+    varchar type_maintenance
+    numeric cout_mga
+    text description
+    varchar statut
+    uuid equipement_id FK
+  }
+  %% gcv — Grenier communautaire (GCV)
+  GCV {
+    uuid id PK
+    varchar nom
+    numeric capacite_t
+    text reglement
+    date date_ouverture
+    varchar statut
+    uuid organisation_id FK
+    uuid responsable_id FK
+    uuid zone_id FK
+  }
+  %% membre_gcv — Membre de GCV
+  MEMBRE_GCV {
+    uuid id PK
+    varchar role_membre
+    date date_adhesion
+    varchar statut
+    uuid exploitation_id FK
+    uuid gcv_id FK
+  }
+  %% decision_collective — Décision collective
+  DECISION_COLLECTIVE {
+    uuid id PK
+    varchar objet
+    date date_decision
+    integer quorum_pct
+    text proces_verbal
+    uuid gcv_id FK
+    uuid secretaire_id FK
+  }
+  %% mouvement_stock — Mouvement de stock
+  MOUVEMENT_STOCK {
+    uuid id PK
+    varchar type_mouvement
+    numeric quantite_kg
+    varchar qualite
+    timestamptz date_mouvement
+    uuid membre_id FK
+    uuid enregistre_par_id FK
+    uuid decision_id FK
+  }
+  %% recu — Reçu numérique
+  RECU {
+    uuid id PK
+    varchar numero UK
+    timestamptz date_emission
+    text url_pdf
+    uuid mouvement_id FK
+  }
+  %% demande_credit — Demande de crédit
+  DEMANDE_CREDIT {
+    uuid id PK
+    numeric montant_demande_mga
+    numeric montant_accorde_mga
+    varchar objet
+    varchar statut
+    date date_demande
+    date date_decision
+    uuid exploitation_id FK
+    uuid imf_organisation_id FK
+    uuid campagne_id FK
+    uuid instructeur_id FK
+  }
+  %% garantie_stock — Garantie en stock
+  GARANTIE_STOCK {
+    uuid id PK
+    numeric quantite_kg
+    numeric valeur_mga
+    uuid demande_credit_id FK
+    uuid gcv_id FK
+  }
+  %% prix_marche — Prix du marché
+  PRIX_MARCHE {
+    uuid id PK
+    date date_releve
+    numeric prix_kg_mga
+    varchar marche
+    varchar source
+    uuid zone_id FK
+    uuid variete_id FK
+    uuid campagne_id FK
+  }
+  %% sinistre — Sinistre
+  SINISTRE {
+    uuid id PK
+    varchar type_sinistre
+    date date_survenance
+    numeric superficie_touchee_ha
+    text description
+    numeric latitude
+    numeric longitude
+    varchar statut
+    timestamptz date_transmission
+    uuid parcelle_id FK
+    uuid alerte_id FK
+    uuid declarant_id FK
+  }
+  %% photo_sinistre — Photo de sinistre
+  PHOTO_SINISTRE {
+    uuid id PK
+    text url
+    timestamptz date_prise
+    uuid sinistre_id FK
+  }
+  %% infrastructure — Ouvrage hydraulique
+  INFRASTRUCTURE {
+    uuid id PK
+    varchar nom
+    varchar type_infrastructure
+    numeric longueur_m
+    varchar etat
+    numeric latitude
+    numeric longitude
+    uuid zone_id FK
+  }
+  %% signalement_infra — Signalement d’ouvrage
+  SIGNALEMENT_INFRA {
+    uuid id PK
+    text description
+    varchar gravite
+    varchar statut
+    timestamptz date_signalement
+    timestamptz date_traitement
+    text url_photo
+    uuid infrastructure_id FK
+    uuid auteur_id FK
+  }
+  %% rapport_visite — Rapport de visite
+  RAPPORT_VISITE {
+    uuid id PK
+    date date_visite
+    integer duree_min
+    text conseils
+    integer nb_exploitants
+    uuid agent_id FK
+    uuid exploitation_id FK
+  }
+  ZONE o{--o| ZONE : "parent_id"
+  ORGANISATION o{--o| ZONE : "zone_id"
+  UTILISATEUR o{--|| ZONE : "zone_id"
+  UTILISATEUR o{--o| ORGANISATION : "organisation_id"
+  UTILISATEUR o{--|| UTILISATEUR_ROLE : "utilisateur_id"
+  ROLE o{--|| UTILISATEUR_ROLE : "role_id"
+  UTILISATEUR o{--|| APPAREIL : "utilisateur_id"
+  UTILISATEUR o{--o| JOURNAL_AUDIT : "utilisateur_id"
+  UTILISATEUR o{--o| PARAMETRE : "modifie_par_id"
+  ZONE o{--|| SEUIL_ALERTE : "zone_id"
+  ORGANISATION o{--o| GCV : "organisation_id"
+  UTILISATEUR o{--|| GCV : "responsable_id"
+  ZONE o{--|| GCV : "zone_id"
+  UTILISATEUR o{--|| EXPLOITATION : "proprietaire_id"
+  ZONE o{--|| EXPLOITATION : "zone_id"
+  EXPLOITATION o{--|| PARCELLE : "exploitation_id"
+  ZONE o{--o| CAMPAGNE : "zone_id"
+  CAMPAGNE o{--|| CYCLE_CULTURAL : "campagne_id"
+  PARCELLE o{--|| CYCLE_CULTURAL : "parcelle_id"
+  VARIETE o{--|| CYCLE_CULTURAL : "variete_id"
+  CYCLE_CULTURAL o{--|| ETAPE_PLANIFIEE : "cycle_id"
+  ETAPE_CULTURELLE o{--|| ETAPE_PLANIFIEE : "etape_code"
+  ETAPE_PLANIFIEE o{--|| DECALAGE : "etape_planifiee_id"
+  UTILISATEUR o{--o| DECALAGE : "valide_par_id"
+  CYCLE_CULTURAL o|--|| RECOLTE : "cycle_id"
+  UTILISATEUR o{--|| RECOLTE : "declare_par_id"
+  EXPLOITATION o{--|| POSSESSION_MATERIEL : "exploitation_id"
+  TYPE_MATERIEL o{--|| POSSESSION_MATERIEL : "type_materiel_id"
+  ETAPE_CULTURELLE o{--|| FICHE_TECHNIQUE : "etape_code"
+  FICHE_TECHNIQUE o{--|| MEDIA : "fiche_id"
+  FICHE_TECHNIQUE o|--o{ FORMATION : "fiche_id"
+  FORMATION o{--|| QUESTION : "formation_id"
+  QUESTION o{--|| CHOIX_REPONSE : "question_id"
+  UTILISATEUR o{--|| INSCRIPTION_FORMATION : "utilisateur_id"
+  FORMATION o{--|| INSCRIPTION_FORMATION : "formation_id"
+  UTILISATEUR o{--o| FICHE_TECHNIQUE : "auteur_id"
+  UTILISATEUR o{--o| ALERTE : "emetteur_id"
+  ALERTE o{--|| CIBLAGE_ALERTE : "alerte_id"
+  ZONE o{--|| CIBLAGE_ALERTE : "zone_id"
+  ALERTE o{--o| NOTIFICATION : "alerte_id"
+  UTILISATEUR o{--|| NOTIFICATION : "utilisateur_id"
+  ETAPE_PLANIFIEE o{--o| NOTIFICATION : "etape_planifiee_id"
+  ZONE o{--|| DONNEE_PLUVIOMETRIQUE : "zone_id"
+  UTILISATEUR o{--o| MESSAGE_SENSIBILISATION : "auteur_id"
+  MESSAGE_SENSIBILISATION o{--|| CIBLAGE_MESSAGE : "message_id"
+  ZONE o{--|| CIBLAGE_MESSAGE : "zone_id"
+  ZONE o{--|| PRIX_MARCHE : "zone_id"
+  VARIETE o{--|| PRIX_MARCHE : "variete_id"
+  CAMPAGNE o{--|| PRIX_MARCHE : "campagne_id"
+  TYPE_MATERIEL o{--|| EQUIPEMENT : "type_materiel_id"
+  ORGANISATION o{--o| EQUIPEMENT : "proprietaire_org_id"
+  ZONE o{--|| EQUIPEMENT : "zone_id"
+  EQUIPEMENT o{--|| RESERVATION : "equipement_id"
+  UTILISATEUR o{--|| RESERVATION : "demandeur_id"
+  EQUIPEMENT o{--|| MAINTENANCE : "equipement_id"
+  EXPLOITATION o{--|| MEMBRE_GCV : "exploitation_id"
+  GCV o{--|| MEMBRE_GCV : "gcv_id"
+  MEMBRE_GCV o{--|| MOUVEMENT_STOCK : "membre_id"
+  MOUVEMENT_STOCK o|--|| RECU : "mouvement_id"
+  UTILISATEUR o{--|| MOUVEMENT_STOCK : "enregistre_par_id"
+  DECISION_COLLECTIVE o{--o| MOUVEMENT_STOCK : "decision_id"
+  GCV o{--|| DECISION_COLLECTIVE : "gcv_id"
+  UTILISATEUR o{--|| DECISION_COLLECTIVE : "secretaire_id"
+  EXPLOITATION o{--|| DEMANDE_CREDIT : "exploitation_id"
+  ORGANISATION o{--|| DEMANDE_CREDIT : "imf_organisation_id"
+  CAMPAGNE o{--|| DEMANDE_CREDIT : "campagne_id"
+  UTILISATEUR o{--o| DEMANDE_CREDIT : "instructeur_id"
+  DEMANDE_CREDIT o{--|| GARANTIE_STOCK : "demande_credit_id"
+  GCV o{--|| GARANTIE_STOCK : "gcv_id"
+  PARCELLE o{--|| SINISTRE : "parcelle_id"
+  ALERTE o{--o| SINISTRE : "alerte_id"
+  UTILISATEUR o{--|| SINISTRE : "declarant_id"
+  SINISTRE o{--|| PHOTO_SINISTRE : "sinistre_id"
+  ZONE o{--|| INFRASTRUCTURE : "zone_id"
+  INFRASTRUCTURE o{--|| SIGNALEMENT_INFRA : "infrastructure_id"
+  UTILISATEUR o{--|| SIGNALEMENT_INFRA : "auteur_id"
+  UTILISATEUR o{--|| RAPPORT_VISITE : "agent_id"
+  EXPLOITATION o{--|| RAPPORT_VISITE : "exploitation_id"
+  APPAREIL o{--|| SYNCHRONISATION : "appareil_id"

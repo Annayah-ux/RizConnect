@@ -1,0 +1,137 @@
+digraph MCT {
+  graph [rankdir=LR, splines=spline, overlap=false, nodesep=0.22, ranksep=0.55, pad=0.3, bgcolor="white", fontname="Helvetica", labelloc="b", labeljust="l",
+    label=<
+      <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="5" COLOR="#94a3b8">
+        <TR><TD ALIGN="LEFT" BGCOLOR="#f1f5f9"><B>MCT — RizConnect Madagascar · modules M6 à M10</B> <FONT POINT-SIZE="9">· E = événement, O = opération, barre = synchronisation, R = résultat</FONT></TD></TR>
+        <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="8">Les barres noires (S1 à S7) marquent les points de synchronisation entre opérations concurrentes ou différées.</FONT></TD></TR>
+      </TABLE>>];
+  node [fontname="Helvetica", fontsize=8];
+  edge [fontname="Helvetica", fontsize=7, color="#64748b", arrowsize=0.6, penwidth=0.9];
+
+  subgraph cluster_M6 {
+    label=<<B>M6</B> — Matériel agricole>;
+    fontsize=10.5; fontcolor="#0f172a"; color="#cbd5e1"; style="rounded"; penwidth=1.1; margin=12;
+    M6_0_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E19</B><BR/><FONT POINT-SIZE="7.5">Demande de réservation d’un équipement</FONT>>];
+    M6_0_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O22</B><BR/><FONT POINT-SIZE="7.5">Vérifier la disponibilité sur la période demandée</FONT>>];
+    M6_0_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R18</B><BR/><FONT POINT-SIZE="7.5">Réservation demandée</FONT>>];
+    M6_1_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E20</B><BR/><FONT POINT-SIZE="7.5">Réponse du propriétaire</FONT>>];
+    M6_1_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O23</B><BR/><FONT POINT-SIZE="7.5">Confirmer ou refuser, puis notifier le demandeur</FONT>>];
+    M6_1_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R19</B><BR/><FONT POINT-SIZE="7.5">Réservation confirmée ou refusée</FONT>>];
+    M6_2_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E21</B><BR/><FONT POINT-SIZE="7.5">Fin de la location</FONT>>];
+    M6_2_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O24</B><BR/><FONT POINT-SIZE="7.5">Clôturer et mettre à jour l’état du matériel</FONT>>];
+    M6_2_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R20</B><BR/><FONT POINT-SIZE="7.5">Équipement remis en service</FONT>>];
+    M6_0_E -> M6_0_O0;
+    M6_0_O0 -> M6_0_R;
+    M6_1_E -> M6_1_O0;
+    M6_1_O0 -> M6_1_R;
+    M6_2_E -> M6_2_O0;
+    M6_2_O0 -> M6_2_R;
+  }
+
+  subgraph cluster_M7 {
+    label=<<B>M7</B> — GCV, stocks et financement>;
+    fontsize=10.5; fontcolor="#0f172a"; color="#cbd5e1"; style="rounded"; penwidth=1.1; margin=12;
+    M7_0_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E22</B><BR/><FONT POINT-SIZE="7.5">Dépôt de paddy au GCV</FONT>>];
+    M7_0_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O25</B><BR/><FONT POINT-SIZE="7.5">Contrôler l’adhésion, peser et qualifier</FONT>>];
+    M7_0_O1 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O26</B><BR/><FONT POINT-SIZE="7.5">Enregistrer le mouvement et émettre le reçu</FONT>>];
+    M7_0_S [shape=box, style="filled", fillcolor="#0f172a", color="#0f172a", width=0.75, height=0.1, label="", tooltip="S4"];
+    M7_0_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R21</B><BR/><FONT POINT-SIZE="7.5">Stock augmenté + reçu numérique</FONT>>];
+    M7_1_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E23</B><BR/><FONT POINT-SIZE="7.5">Demande de retrait</FONT>>];
+    M7_1_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O27</B><BR/><FONT POINT-SIZE="7.5">Vérifier la décision collective (RG-06) et le stock disponible</FONT>>];
+    M7_1_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R22</B><BR/><FONT POINT-SIZE="7.5">Retrait autorisé ou refusé</FONT>>];
+    M7_2_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E24</B><BR/><FONT POINT-SIZE="7.5">Demande de crédit de campagne</FONT>>];
+    M7_2_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O28</B><BR/><FONT POINT-SIZE="7.5">Constituer le dossier et la garantie en stock</FONT>>];
+    M7_2_O1 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O29</B><BR/><FONT POINT-SIZE="7.5">Instruction et décision de l’IMF</FONT>>];
+    M7_2_S [shape=box, style="filled", fillcolor="#0f172a", color="#0f172a", width=0.75, height=0.1, label="", tooltip="S5"];
+    M7_2_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R23</B><BR/><FONT POINT-SIZE="7.5">Statut de la demande mis à jour</FONT>>];
+    M7_3_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E25</B><BR/><FONT POINT-SIZE="7.5">Relevé des prix du marché</FONT>>];
+    M7_3_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O30</B><BR/><FONT POINT-SIZE="7.5">Publier les prix et alerter si prix favorable</FONT>>];
+    M7_3_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R24</B><BR/><FONT POINT-SIZE="7.5">Prix publiés</FONT>>];
+    M7_0_E -> M7_0_O0;
+    M7_0_O0 -> M7_0_O1;
+    M7_0_O1 -> M7_0_S;
+    M7_0_S -> M7_0_R;
+    M7_1_E -> M7_1_O0;
+    M7_1_O0 -> M7_1_R;
+    M7_2_E -> M7_2_O0;
+    M7_2_O0 -> M7_2_O1;
+    M7_2_O1 -> M7_2_S;
+    M7_2_S -> M7_2_R;
+    M7_3_E -> M7_3_O0;
+    M7_3_O0 -> M7_3_R;
+  }
+
+  subgraph cluster_M8 {
+    label=<<B>M8</B> — Suivi de production et tableaux de bord>;
+    fontsize=10.5; fontcolor="#0f172a"; color="#cbd5e1"; style="rounded"; penwidth=1.1; margin=12;
+    M8_0_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E26</B><BR/><FONT POINT-SIZE="7.5">Déclaration de récolte</FONT>>];
+    M8_0_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O31</B><BR/><FONT POINT-SIZE="7.5">Calculer le rendement en t/ha</FONT>>];
+    M8_0_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R25</B><BR/><FONT POINT-SIZE="7.5">Récolte enregistrée</FONT>>];
+    M8_1_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E27</B><BR/><FONT POINT-SIZE="7.5">Visite d’un agent de terrain</FONT>>];
+    M8_1_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O32</B><BR/><FONT POINT-SIZE="7.5">Saisir le rapport de visite et les conseils</FONT>>];
+    M8_1_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R26</B><BR/><FONT POINT-SIZE="7.5">Rapport de visite</FONT>>];
+    M8_2_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E28</B><BR/><FONT POINT-SIZE="7.5">Clôture de campagne</FONT>>];
+    M8_2_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O33</B><BR/><FONT POINT-SIZE="7.5">Agréger par région et district, exporter CSV/PDF</FONT>>];
+    M8_2_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R27</B><BR/><FONT POINT-SIZE="7.5">Tableau de bord et export</FONT>>];
+    M8_0_E -> M8_0_O0;
+    M8_0_O0 -> M8_0_R;
+    M8_1_E -> M8_1_O0;
+    M8_1_O0 -> M8_1_R;
+    M8_2_E -> M8_2_O0;
+    M8_2_O0 -> M8_2_R;
+  }
+
+  subgraph cluster_M9 {
+    label=<<B>M9</B> — Sinistres et infrastructures>;
+    fontsize=10.5; fontcolor="#0f172a"; color="#cbd5e1"; style="rounded"; penwidth=1.1; margin=12;
+    M9_0_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E29</B><BR/><FONT POINT-SIZE="7.5">Déclaration d’un sinistre (photo + GPS)</FONT>>];
+    M9_0_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O34</B><BR/><FONT POINT-SIZE="7.5">Enregistrer, géolocaliser et classer le sinistre</FONT>>];
+    M9_0_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R28</B><BR/><FONT POINT-SIZE="7.5">Sinistre signalé</FONT>>];
+    M9_1_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E30</B><BR/><FONT POINT-SIZE="7.5">Transmission au BNGRC et à l’agent de zone</FONT>>];
+    M9_1_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O35</B><BR/><FONT POINT-SIZE="7.5">Notifier les destinataires et suivre le traitement</FONT>>];
+    M9_1_S [shape=box, style="filled", fillcolor="#0f172a", color="#0f172a", width=0.75, height=0.1, label="", tooltip="S6"];
+    M9_1_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R29</B><BR/><FONT POINT-SIZE="7.5">Sinistre transmis / suivi</FONT>>];
+    M9_2_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E31</B><BR/><FONT POINT-SIZE="7.5">Signalement d’un ouvrage hydraulique</FONT>>];
+    M9_2_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O36</B><BR/><FONT POINT-SIZE="7.5">Enregistrer et évaluer la gravité</FONT>>];
+    M9_2_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R30</B><BR/><FONT POINT-SIZE="7.5">Signalement d’infrastructure</FONT>>];
+    M9_3_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E32</B><BR/><FONT POINT-SIZE="7.5">Clôture d’un sinistre</FONT>>];
+    M9_3_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O37</B><BR/><FONT POINT-SIZE="7.5">Mettre à jour la cartographie des zones sinistrées</FONT>>];
+    M9_3_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R31</B><BR/><FONT POINT-SIZE="7.5">Carte des zones sinistrées</FONT>>];
+    M9_0_E -> M9_0_O0;
+    M9_0_O0 -> M9_0_R;
+    M9_1_E -> M9_1_O0;
+    M9_1_O0 -> M9_1_S;
+    M9_1_S -> M9_1_R;
+    M9_2_E -> M9_2_O0;
+    M9_2_O0 -> M9_2_R;
+    M9_3_E -> M9_3_O0;
+    M9_3_O0 -> M9_3_R;
+  }
+
+  subgraph cluster_M10 {
+    label=<<B>M10</B> — Administration, notifications et synchronisation>;
+    fontsize=10.5; fontcolor="#0f172a"; color="#cbd5e1"; style="rounded"; penwidth=1.1; margin=12;
+    M10_0_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E33</B><BR/><FONT POINT-SIZE="7.5">Action métier hors ligne</FONT>>];
+    M10_0_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O38</B><BR/><FONT POINT-SIZE="7.5">Journaliser dans la file locale de l’appareil</FONT>>];
+    M10_0_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R32</B><BR/><FONT POINT-SIZE="7.5">Action en attente de synchronisation</FONT>>];
+    M10_1_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E34</B><BR/><FONT POINT-SIZE="7.5">Retour du réseau (synchronisation)</FONT>>];
+    M10_1_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O39</B><BR/><FONT POINT-SIZE="7.5">Réconcilier les enregistrements et tracer les conflits</FONT>>];
+    M10_1_S [shape=box, style="filled", fillcolor="#0f172a", color="#0f172a", width=0.75, height=0.1, label="", tooltip="S7"];
+    M10_1_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R33</B><BR/><FONT POINT-SIZE="7.5">Données consolidées</FONT>>];
+    M10_2_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E35</B><BR/><FONT POINT-SIZE="7.5">Tâche planifiée quotidienne</FONT>>];
+    M10_2_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O40</B><BR/><FONT POINT-SIZE="7.5">Sauvegarder les données et purger les journaux</FONT>>];
+    M10_2_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R34</B><BR/><FONT POINT-SIZE="7.5">Sauvegarde réalisée</FONT>>];
+    M10_3_E [shape=ellipse, style="filled", fillcolor="#fef9c3", color="#a16207", label=<<B>E36</B><BR/><FONT POINT-SIZE="7.5">Modification d’un paramètre ou d’un seuil</FONT>>];
+    M10_3_O0 [shape=box, style="rounded,filled", fillcolor="#dbeafe", color="#1d4ed8", label=<<B>O41</B><BR/><FONT POINT-SIZE="7.5">Contrôler le droit, appliquer et tracer (RF-49, RF-50)</FONT>>];
+    M10_3_R [shape=box, style="rounded,filled", fillcolor="#dcfce7", color="#15803d", label=<<B>R35</B><BR/><FONT POINT-SIZE="7.5">Paramètre appliqué</FONT>>];
+    M10_0_E -> M10_0_O0;
+    M10_0_O0 -> M10_0_R;
+    M10_1_E -> M10_1_O0;
+    M10_1_O0 -> M10_1_S;
+    M10_1_S -> M10_1_R;
+    M10_2_E -> M10_2_O0;
+    M10_2_O0 -> M10_2_R;
+    M10_3_E -> M10_3_O0;
+    M10_3_O0 -> M10_3_R;
+  }
+}
