@@ -918,6 +918,226 @@ GROUP BY z.id, z.code, z.nom, z.type_zone, c.id;`,
 ];
 
 /* ------------------------------------------------------------------ */
+/* Performance : index secondaires, stockage, vue matérialisée         */
+/* ------------------------------------------------------------------ */
+
+const ix = (name, table, cols, opts = {}) => ({ name, table, cols, method: 'btree', ...opts });
+
+/*
+ * Index secondaires. Chaque entrée répond à un écran ou à un traitement du cahier
+ * des charges ; les index de clés étrangères déjà générés ne sont pas répétés quand
+ * un index ci-dessous commence par la même colonne (« préfixe gauche »).
+ *
+ * opts :
+ *   method  btree (défaut) | gist | gin | brin
+ *   unique  contrainte d'unicité portée par l'index
+ *   where   index partiel (ne couvre alors pas les contrôles de clé étrangère)
+ *   include colonnes ajoutées en INCLUDE (balayage d'index seul)
+ *   opclass classe d'opérateurs, une par colonne si tableau
+ */
+export const perfIndexes = [
+  /* D1 — comptes, ciblage, audit */
+  ix('idx_utilisateur_actif_zone', 'UTILISATEUR', ['zone_id'], {
+    include: ['telephone'],
+    where: "statut = 'actif'",
+    why: 'Liste des destinataires d’une alerte par zone, sans lecture de la table (RF-23, RG-04).',
+  }),
+  ix('idx_utilisateur_role_actif', 'UTILISATEUR_ROLE', ['utilisateur_id', 'role_id'], {
+    unique: true,
+    where: 'actif',
+    why: 'Un seul rôle actif par couple utilisateur/rôle ; contrôle des droits en une lecture (RF-02, RG-07).',
+  }),
+  ix('idx_seuil_alerte_actif', 'SEUIL_ALERTE', ['zone_id', 'type_alerte'], {
+    unique: true,
+    where: 'actif',
+    why: 'Un seul seuil actif par zone et type (RF-50) ; lu par v_indicateur_pluie.',
+  }),
+  ix('idx_journal_audit_entite', 'JOURNAL_AUDIT', ['entite', 'entite_id', 'date_action DESC'], {
+    why: 'Historique d’un objet précis, du plus récent au plus ancien (RF-49).',
+  }),
+  ix('idx_journal_audit_date', 'JOURNAL_AUDIT', ['date_action'], {
+    method: 'brin',
+    why: 'Table append-only : BRIN tient en quelques pages et sert les purges et extractions par période.',
+  }),
+
+  /* D2 — exploitations, calendrier */
+  ix('idx_exploitation_zone', 'EXPLOITATION', ['zone_id', 'statut'], {
+    why: 'Tableaux de bord et ciblage par zone (RF-05, RF-38).',
+  }),
+  ix('idx_parcelle_exploitation', 'PARCELLE', ['exploitation_id', 'statut'], {
+    include: ['superficie_ha'],
+    why: 'Liste et somme des surfaces d’une exploitation sans lire la table (RF-05, RF-37).',
+  }),
+  ix('idx_parcelle_geometrie', 'PARCELLE', ['geometrie'], {
+    method: 'gist',
+    where: 'geometrie IS NOT NULL',
+    why: 'Intersection parcelle / zone sinistrée et cartographie (RF-08, RF-45).',
+  }),
+  ix('idx_cycle_cultural_parcelle', 'CYCLE_CULTURAL', ['parcelle_id', 'campagne_id'], {
+    why: 'Calendrier d’une parcelle pour une campagne (RF-09, RG-01).',
+  }),
+  ix('idx_etape_planifiee_cycle', 'ETAPE_PLANIFIEE', ['cycle_id', 'date_prevue'], {
+    why: 'Étapes d’un cycle dans l’ordre chronologique (RF-09, RF-12).',
+  }),
+  ix('idx_etape_planifiee_rappels', 'ETAPE_PLANIFIEE', ['date_prevue'], {
+    include: ['cycle_id', 'etape_code'],
+    where: "statut = 'prevue'",
+    why: 'Rappels du jour : l’index ne contient que les étapes à venir (RF-12).',
+  }),
+  ix('idx_decalage_a_valider', 'DECALAGE', ['statut', 'date_proposee'], {
+    where: "statut = 'propose'",
+    why: 'File des décalages en attente de validation (RF-11, RG-05).',
+  }),
+  ix('idx_recolte_cycle_date', 'RECOLTE', ['cycle_id', 'date_recolte DESC'], {
+    why: 'Dernière récolte d’un cycle, rendement et historique (RF-37).',
+  }),
+  ix('idx_possession_exploitation', 'POSSESSION_MATERIEL', ['exploitation_id', 'type_materiel_id'], {
+    why: 'Matériel déclaré par une exploitation, utilisé pour les conseils (RF-06, RF-39).',
+  }),
+
+  /* D3 — bibliothèque et formation */
+  ix('idx_fiche_technique_etape', 'FICHE_TECHNIQUE', ['etape_code', 'statut', 'date_publication DESC'], {
+    why: 'Fiches publiées d’une étape culturale, les plus récentes d’abord (RF-14).',
+  }),
+  ix('idx_fiche_technique_recherche', 'FICHE_TECHNIQUE', ['titre_fr', 'resume_fr'], {
+    method: 'gin',
+    opclass: 'gin_trgm_ops',
+    why: 'Recherche libre (ILIKE « %mot% ») dans les fiches sans parcours complet (RF-14).',
+  }),
+  ix('idx_media_fiche', 'MEDIA', ['fiche_id', 'type_media'], {
+    why: 'Illustrations, vidéos et audios d’une fiche par type (RF-15).',
+  }),
+  ix('idx_inscription_utilisateur', 'INSCRIPTION_FORMATION', ['utilisateur_id', 'statut'], {
+    why: 'Progression d’un apprenant dans ses formations (RF-17).',
+  }),
+  ix('idx_inscription_unique', 'INSCRIPTION_FORMATION', ['utilisateur_id', 'formation_id'], {
+    unique: true,
+    why: 'Une seule inscription par utilisateur et par formation (RF-17).',
+  }),
+
+  /* D4 — alertes, notifications, pluie */
+  ix('idx_alerte_emise', 'ALERTE', ['date_emission DESC'], {
+    where: "statut = 'emise'",
+    why: 'Bandeau des alertes en cours, les plus récentes d’abord (RF-20, RG-04).',
+  }),
+  ix('idx_ciblage_alerte_unique', 'CIBLAGE_ALERTE', ['alerte_id', 'zone_id'], {
+    unique: true,
+    why: 'Évite de diffuser deux fois la même alerte dans la même zone (RF-23, RG-04).',
+  }),
+  ix('idx_ciblage_message_unique', 'CIBLAGE_MESSAGE', ['message_id', 'zone_id'], {
+    unique: true,
+    why: 'Évite les doublons de ciblage d’un message (RF-18).',
+  }),
+  ix('idx_notification_utilisateur', 'NOTIFICATION', ['utilisateur_id', 'date_envoi DESC'], {
+    why: 'Boîte de réception d’un utilisateur, la plus récente d’abord (RF-21, RF-24).',
+  }),
+  ix('idx_notification_a_envoyer', 'NOTIFICATION', ['date_envoi'], {
+    include: ['utilisateur_id', 'canal', 'alerte_id'],
+    where: "statut IN ('en_attente', 'echec')",
+    why: 'File d’envoi : ne stocke que les messages à traiter, balayage d’index seul (RF-21, RF-24).',
+  }),
+  ix('idx_notification_non_lues', 'NOTIFICATION', ['utilisateur_id'], {
+    include: ['date_envoi'],
+    where: 'date_lecture IS NULL',
+    why: 'Compteur de messages non lus, sans lire l’historique complet (RF-24).',
+  }),
+  ix('idx_notification_alerte', 'NOTIFICATION', ['alerte_id', 'statut'], {
+    why: 'Suivi de la diffusion d’une alerte (envoyés, échecs) (RG-04).',
+  }),
+  ix('idx_pluie_zone_date_source', 'DONNEE_PLUVIOMETRIQUE', ['zone_id', 'date_mesure DESC', 'source'], {
+    unique: true,
+    why: 'Cumuls à 10 et 20 jours par zone (v_indicateur_pluie) et rejet des imports en double (RF-25).',
+  }),
+
+  /* D5 — matériel */
+  ix('idx_equipement_disponible', 'EQUIPEMENT', ['zone_id', 'type_materiel_id'], {
+    include: ['quantite', 'tarif_journalier_mga'],
+    where: "etat = 'disponible'",
+    why: 'Recherche d’un matériel disponible dans une zone (v_disponibilite_materiel, RF-26, RF-27).',
+  }),
+  ix('idx_reservation_periode', 'RESERVATION', ['equipement_id', 'date_debut', 'date_fin'], {
+    include: ['statut'],
+    why: 'Détection des chevauchements de réservation et calcul de disponibilité (RF-27).',
+  }),
+  ix('idx_reservation_demandeur', 'RESERVATION', ['demandeur_id', 'statut'], {
+    why: 'Suivi des demandes d’un exploitant (RF-28).',
+  }),
+  ix('idx_maintenance_equipement', 'MAINTENANCE', ['equipement_id', 'date_intervention DESC'], {
+    why: 'Dernière maintenance et coût par équipement (RF-29).',
+  }),
+
+  /* D6 — GCV, stocks, financement */
+  ix('idx_membre_gcv_gcv', 'MEMBRE_GCV', ['gcv_id', 'statut'], {
+    why: 'Membres actifs d’un grenier (RF-31, RF-32).',
+  }),
+  ix('idx_membre_gcv_exploitation', 'MEMBRE_GCV', ['exploitation_id', 'statut'], {
+    why: 'Greniers fréquentés par une exploitation (RF-32).',
+  }),
+  ix('idx_mouvement_stock_membre', 'MOUVEMENT_STOCK', ['membre_id', 'qualite'], {
+    include: ['type_mouvement', 'quantite_kg'],
+    why: 'Agrégat de v_stock_gcv calculé par balayage d’index seul, sans lire la table (RF-31).',
+  }),
+  ix('idx_mouvement_stock_date', 'MOUVEMENT_STOCK', ['date_mouvement'], {
+    method: 'brin',
+    why: 'Journal append-only : BRIN pour les états et purges par période (RF-31, RF-32).',
+  }),
+  ix('idx_decision_collective_gcv', 'DECISION_COLLECTIVE', ['gcv_id', 'date_decision DESC'], {
+    why: 'Dernières décisions d’un grenier, préalables à un retrait (RF-34, RG-06).',
+  }),
+  ix('idx_recu_mouvement', 'RECU', ['mouvement_id'], {
+    unique: true,
+    why: 'Un seul reçu par mouvement (association 1,1 A59, RF-32).',
+  }),
+  ix('idx_demande_credit_file', 'DEMANDE_CREDIT', ['statut', 'date_demande'], {
+    where: "statut IN ('soumise', 'etude')",
+    why: 'File d’instruction des demandes de crédit (RF-33).',
+  }),
+  ix('idx_demande_credit_exploitation', 'DEMANDE_CREDIT', ['exploitation_id', 'campagne_id'], {
+    why: 'Crédits d’une exploitation pour une campagne (RF-33, RF-36).',
+  }),
+  ix('idx_prix_marche_lookup', 'PRIX_MARCHE', ['zone_id', 'variete_id', 'date_releve DESC'], {
+    why: 'Dernier prix connu par zone et variété (RF-35).',
+  }),
+
+  /* D7 — sinistres, infrastructures, visites */
+  ix('idx_sinistre_statut', 'SINISTRE', ['statut', 'date_survenance DESC'], {
+    why: 'File de traitement BNGRC, du sinistre le plus récent au plus ancien (RF-43).',
+  }),
+  ix('idx_sinistre_parcelle', 'SINISTRE', ['parcelle_id', 'date_survenance DESC'], {
+    why: 'Sinistralité d’une parcelle sur plusieurs campagnes (RF-42, RF-45).',
+  }),
+  ix('idx_signalement_statut', 'SIGNALEMENT_INFRA', ['statut', 'date_signalement DESC'], {
+    why: 'Suivi des signalements d’infrastructure par état (RF-44).',
+  }),
+  ix('idx_rapport_visite_exploitation', 'RAPPORT_VISITE', ['exploitation_id', 'date_visite DESC'], {
+    why: 'Dernières visites d’une exploitation (RF-41).',
+  }),
+];
+
+/*
+ * Paramètres de stockage : marge de remplissage pour les tables souvent mises à jour
+ * (mises à jour « HOT », moins de réécritures d’index) et autovacuum plus réactif
+ * sur les tables à fort volume.
+ */
+export const storageParams = [
+  { table: 'NOTIFICATION', params: { fillfactor: 85, autovacuum_vacuum_scale_factor: 0.02, autovacuum_analyze_scale_factor: 0.02 }, why: '5 à 10 M lignes/an, statut et date_lecture modifiés en continu.' },
+  { table: 'ETAPE_PLANIFIEE', params: { fillfactor: 90, autovacuum_analyze_scale_factor: 0.05 }, why: 'Dates réelles et statuts mis à jour au fil de la campagne.' },
+  { table: 'RESERVATION', params: { fillfactor: 90 }, why: 'Changements de statut fréquents (demandée → confirmée → close).' },
+  { table: 'EQUIPEMENT', params: { fillfactor: 90 }, why: 'État et quantité réévalués à chaque réservation.' },
+  { table: 'SINISTRE', params: { fillfactor: 90 }, why: 'Passage signalé → transmis → traité, avec pièces jointes.' },
+  { table: 'SYNCHRONISATION', params: { fillfactor: 90 }, why: 'Ligne complétée à la fin de chaque synchronisation.' },
+  { table: 'ALERTE', params: { fillfactor: 95 }, why: 'Peu de mises à jour, mais diffusion massive en lecture.' },
+  { table: 'JOURNAL_AUDIT', params: { fillfactor: 100, autovacuum_vacuum_scale_factor: 0.05, autovacuum_analyze_scale_factor: 0.05 }, why: 'Insertion seule : pages pleines, purge mensuelle.' },
+  { table: 'MOUVEMENT_STOCK', params: { fillfactor: 100, autovacuum_analyze_scale_factor: 0.05 }, why: 'Insertion seule : écritures comptables jamais modifiées.' },
+];
+
+/* Index de la vue matérialisée : indispensable à REFRESH ... CONCURRENTLY. */
+export const matviewIndexes = [
+  { view: 'v_tableau_bord_zone', name: 'idx_v_tableau_bord_zone', cols: ['zone_id', 'campagne_id'], unique: true, why: 'Rafraîchissement concurrent et lecture par zone/campagne (RF-38, RF-40).' },
+  { view: 'v_tableau_bord_zone', name: 'idx_v_tableau_bord_campagne', cols: ['campagne_id'], unique: false, why: 'Filtre par campagne dans les tableaux de bord nationaux.' },
+];
+
+/* ------------------------------------------------------------------ */
 /* MCT — événements, opérations, synchronisations, résultats           */
 /* ------------------------------------------------------------------ */
 

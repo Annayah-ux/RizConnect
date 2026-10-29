@@ -4,6 +4,8 @@
 
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- pg_trgm : recherche libre par trigrammes (index GIN des fiches techniques).
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- ==================================================================
 -- D1 — Comptes, référentiel et administration (modules M1 · M10)
@@ -244,7 +246,6 @@ COMMENT ON COLUMN exploitation.telephone IS 'Téléphone de contact';
 COMMENT ON COLUMN exploitation.superficie_totale_ha IS 'Somme des parcelles (dénormalisée pour le pilotage)';
 COMMENT ON COLUMN exploitation.statut IS 'État';
 CREATE INDEX idx_exploitation_proprietaire_id ON exploitation (proprietaire_id);
-CREATE INDEX idx_exploitation_zone_id ON exploitation (zone_id);
 
 CREATE TABLE parcelle (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -270,7 +271,6 @@ COMMENT ON COLUMN parcelle.latitude IS 'Latitude du centroïde';
 COMMENT ON COLUMN parcelle.longitude IS 'Longitude du centroïde';
 COMMENT ON COLUMN parcelle.geometrie IS 'Contour saisi sur la carte (PostGIS)';
 COMMENT ON COLUMN parcelle.statut IS 'État';
-CREATE INDEX idx_parcelle_exploitation_id ON parcelle (exploitation_id);
 
 CREATE TABLE variete (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -333,7 +333,6 @@ COMMENT ON COLUMN cycle_cultural.date_debut IS 'Date de démarrage (travail du s
 COMMENT ON COLUMN cycle_cultural.date_fin_prevue IS 'Fin prévue (battage)';
 COMMENT ON COLUMN cycle_cultural.statut IS 'Avancement';
 CREATE INDEX idx_cycle_cultural_campagne_id ON cycle_cultural (campagne_id);
-CREATE INDEX idx_cycle_cultural_parcelle_id ON cycle_cultural (parcelle_id);
 CREATE INDEX idx_cycle_cultural_variete_id ON cycle_cultural (variete_id);
 
 CREATE TABLE etape_culturelle (
@@ -370,7 +369,6 @@ COMMENT ON COLUMN etape_planifiee.id IS 'Identifiant technique';
 COMMENT ON COLUMN etape_planifiee.date_prevue IS 'Date planifiée';
 COMMENT ON COLUMN etape_planifiee.date_reelle IS 'Date de réalisation constatée';
 COMMENT ON COLUMN etape_planifiee.statut IS 'Avancement';
-CREATE INDEX idx_etape_planifiee_cycle_id ON etape_planifiee (cycle_id);
 CREATE INDEX idx_etape_planifiee_etape_code ON etape_planifiee (etape_code);
 
 CREATE TABLE decalage (
@@ -417,7 +415,6 @@ COMMENT ON COLUMN recolte.date_recolte IS 'Date de moisson/battage';
 COMMENT ON COLUMN recolte.quantite_paddy_kg IS 'Production de paddy déclarée';
 COMMENT ON COLUMN recolte.rendement_t_ha IS 'Rendement calculé : quantité / superficie';
 COMMENT ON COLUMN recolte.qualite IS 'Qualité estimée';
-CREATE INDEX idx_recolte_cycle_id ON recolte (cycle_id);
 CREATE INDEX idx_recolte_declare_par_id ON recolte (declare_par_id);
 
 CREATE TABLE possession_materiel (
@@ -434,7 +431,6 @@ COMMENT ON TABLE possession_materiel IS 'Matériel déclaré par une exploitatio
 COMMENT ON COLUMN possession_materiel.id IS 'Identifiant technique';
 COMMENT ON COLUMN possession_materiel.quantite IS 'Nombre d’unités';
 COMMENT ON COLUMN possession_materiel.annee_acquisition IS 'Année d’acquisition';
-CREATE INDEX idx_possession_materiel_exploitation_id ON possession_materiel (exploitation_id);
 CREATE INDEX idx_possession_materiel_type_materiel_id ON possession_materiel (type_materiel_id);
 
 -- ==================================================================
@@ -468,7 +464,6 @@ COMMENT ON COLUMN fiche_technique.outil_traditionnel IS 'Ex. angady, faucille';
 COMMENT ON COLUMN fiche_technique.outil_moderne IS 'Ex. motoculteur, batteuse';
 COMMENT ON COLUMN fiche_technique.statut IS 'Cycle de publication';
 COMMENT ON COLUMN fiche_technique.date_publication IS 'Date de mise en ligne';
-CREATE INDEX idx_fiche_technique_etape_code ON fiche_technique (etape_code);
 CREATE INDEX idx_fiche_technique_auteur_id ON fiche_technique (auteur_id);
 
 CREATE TABLE media (
@@ -491,7 +486,6 @@ COMMENT ON COLUMN media.url IS 'Adresse du fichier';
 COMMENT ON COLUMN media.legende IS 'Légende';
 COMMENT ON COLUMN media.langue IS 'Langue';
 COMMENT ON COLUMN media.duree_s IS 'Durée pour les vidéos et audios';
-CREATE INDEX idx_media_fiche_id ON media (fiche_id);
 
 CREATE TABLE formation (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -566,7 +560,6 @@ COMMENT ON COLUMN inscription_formation.date_inscription IS 'Date d’inscriptio
 COMMENT ON COLUMN inscription_formation.progression_pct IS 'Progression de 0 à 100';
 COMMENT ON COLUMN inscription_formation.score IS 'Score du quiz';
 COMMENT ON COLUMN inscription_formation.statut IS 'État';
-CREATE INDEX idx_inscription_formation_utilisateur_id ON inscription_formation (utilisateur_id);
 CREATE INDEX idx_inscription_formation_formation_id ON inscription_formation (formation_id);
 
 -- ==================================================================
@@ -618,7 +611,6 @@ CREATE TABLE ciblage_alerte (
 );
 COMMENT ON TABLE ciblage_alerte IS 'Zones couvertes par une alerte (RF-23) ; une alerte peut viser plusieurs communes.';
 COMMENT ON COLUMN ciblage_alerte.id IS 'Identifiant technique';
-CREATE INDEX idx_ciblage_alerte_alerte_id ON ciblage_alerte (alerte_id);
 CREATE INDEX idx_ciblage_alerte_zone_id ON ciblage_alerte (zone_id);
 
 CREATE TABLE notification (
@@ -647,8 +639,6 @@ COMMENT ON COLUMN notification.message IS 'Contenu envoyé';
 COMMENT ON COLUMN notification.statut IS 'État de diffusion';
 COMMENT ON COLUMN notification.date_envoi IS 'Date d’envoi';
 COMMENT ON COLUMN notification.date_lecture IS 'Date de lecture / d’accusé';
-CREATE INDEX idx_notification_alerte_id ON notification (alerte_id);
-CREATE INDEX idx_notification_utilisateur_id ON notification (utilisateur_id);
 CREATE INDEX idx_notification_etape_planifiee_id ON notification (etape_planifiee_id);
 
 CREATE TABLE donnee_pluviometrique (
@@ -665,7 +655,6 @@ COMMENT ON COLUMN donnee_pluviometrique.id IS 'Identifiant technique';
 COMMENT ON COLUMN donnee_pluviometrique.date_mesure IS 'Jour du relevé';
 COMMENT ON COLUMN donnee_pluviometrique.pluie_mm IS 'Hauteur de pluie';
 COMMENT ON COLUMN donnee_pluviometrique.source IS 'Station ou fournisseur';
-CREATE INDEX idx_donnee_pluviometrique_zone_id ON donnee_pluviometrique (zone_id);
 
 CREATE TABLE message_sensibilisation (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -700,7 +689,6 @@ CREATE TABLE ciblage_message (
 );
 COMMENT ON TABLE ciblage_message IS 'Zones destinataires d''un message de sensibilisation (RF-18).';
 COMMENT ON COLUMN ciblage_message.id IS 'Identifiant technique';
-CREATE INDEX idx_ciblage_message_message_id ON ciblage_message (message_id);
 CREATE INDEX idx_ciblage_message_zone_id ON ciblage_message (zone_id);
 
 -- ==================================================================
@@ -775,8 +763,6 @@ COMMENT ON COLUMN reservation.statut IS 'État';
 COMMENT ON COLUMN reservation.date_demande IS 'Date de la demande';
 COMMENT ON COLUMN reservation.date_reponse IS 'Date de la réponse';
 COMMENT ON COLUMN reservation.motif_refus IS 'Motif éventuel';
-CREATE INDEX idx_reservation_equipement_id ON reservation (equipement_id);
-CREATE INDEX idx_reservation_demandeur_id ON reservation (demandeur_id);
 
 CREATE TABLE maintenance (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -798,7 +784,6 @@ COMMENT ON COLUMN maintenance.type_maintenance IS 'Nature';
 COMMENT ON COLUMN maintenance.cout_mga IS 'Coût de l’intervention';
 COMMENT ON COLUMN maintenance.description IS 'Travaux réalisés';
 COMMENT ON COLUMN maintenance.statut IS 'État';
-CREATE INDEX idx_maintenance_equipement_id ON maintenance (equipement_id);
 
 -- ==================================================================
 -- D6 — GCV, stocks, crédit et prix (modules M7)
@@ -849,8 +834,6 @@ COMMENT ON COLUMN membre_gcv.id IS 'Identifiant technique';
 COMMENT ON COLUMN membre_gcv.role_membre IS 'Fonction dans le grenier';
 COMMENT ON COLUMN membre_gcv.date_adhesion IS 'Date d’adhésion';
 COMMENT ON COLUMN membre_gcv.statut IS 'État';
-CREATE INDEX idx_membre_gcv_exploitation_id ON membre_gcv (exploitation_id);
-CREATE INDEX idx_membre_gcv_gcv_id ON membre_gcv (gcv_id);
 
 CREATE TABLE decision_collective (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -870,7 +853,6 @@ COMMENT ON COLUMN decision_collective.objet IS 'Objet de la décision';
 COMMENT ON COLUMN decision_collective.date_decision IS 'Date de l’assemblée';
 COMMENT ON COLUMN decision_collective.quorum_pct IS 'Quorum atteint';
 COMMENT ON COLUMN decision_collective.proces_verbal IS 'Compte rendu';
-CREATE INDEX idx_decision_collective_gcv_id ON decision_collective (gcv_id);
 CREATE INDEX idx_decision_collective_secretaire_id ON decision_collective (secretaire_id);
 
 CREATE TABLE mouvement_stock (
@@ -895,7 +877,6 @@ COMMENT ON COLUMN mouvement_stock.type_mouvement IS 'Sens du mouvement';
 COMMENT ON COLUMN mouvement_stock.quantite_kg IS 'Poids de paddy';
 COMMENT ON COLUMN mouvement_stock.qualite IS 'Qualité constatée';
 COMMENT ON COLUMN mouvement_stock.date_mouvement IS 'Horodatage';
-CREATE INDEX idx_mouvement_stock_membre_id ON mouvement_stock (membre_id);
 CREATE INDEX idx_mouvement_stock_enregistre_par_id ON mouvement_stock (enregistre_par_id);
 CREATE INDEX idx_mouvement_stock_decision_id ON mouvement_stock (decision_id);
 
@@ -914,7 +895,6 @@ COMMENT ON COLUMN recu.id IS 'Identifiant technique';
 COMMENT ON COLUMN recu.numero IS 'Numéro de reçu';
 COMMENT ON COLUMN recu.date_emission IS 'Date d’émission';
 COMMENT ON COLUMN recu.url_pdf IS 'Document généré';
-CREATE INDEX idx_recu_mouvement_id ON recu (mouvement_id);
 
 CREATE TABLE demande_credit (
   id                           uuid DEFAULT gen_random_uuid(),
@@ -943,7 +923,6 @@ COMMENT ON COLUMN demande_credit.objet IS 'Semences, main-d’œuvre, location�
 COMMENT ON COLUMN demande_credit.statut IS 'Avancement';
 COMMENT ON COLUMN demande_credit.date_demande IS 'Date de dépôt';
 COMMENT ON COLUMN demande_credit.date_decision IS 'Date de décision';
-CREATE INDEX idx_demande_credit_exploitation_id ON demande_credit (exploitation_id);
 CREATE INDEX idx_demande_credit_imf_organisation_id ON demande_credit (imf_organisation_id);
 CREATE INDEX idx_demande_credit_campagne_id ON demande_credit (campagne_id);
 CREATE INDEX idx_demande_credit_instructeur_id ON demande_credit (instructeur_id);
@@ -985,7 +964,6 @@ COMMENT ON COLUMN prix_marche.date_releve IS 'Date du relevé';
 COMMENT ON COLUMN prix_marche.prix_kg_mga IS 'Prix au kilo';
 COMMENT ON COLUMN prix_marche.marche IS 'Marché ou lieu de vente';
 COMMENT ON COLUMN prix_marche.source IS 'Source du relevé';
-CREATE INDEX idx_prix_marche_zone_id ON prix_marche (zone_id);
 CREATE INDEX idx_prix_marche_variete_id ON prix_marche (variete_id);
 CREATE INDEX idx_prix_marche_campagne_id ON prix_marche (campagne_id);
 
@@ -1023,7 +1001,6 @@ COMMENT ON COLUMN sinistre.latitude IS 'Position GPS';
 COMMENT ON COLUMN sinistre.longitude IS 'Position GPS';
 COMMENT ON COLUMN sinistre.statut IS 'Traitement';
 COMMENT ON COLUMN sinistre.date_transmission IS 'Transmission au BNGRC';
-CREATE INDEX idx_sinistre_parcelle_id ON sinistre (parcelle_id);
 CREATE INDEX idx_sinistre_alerte_id ON sinistre (alerte_id);
 CREATE INDEX idx_sinistre_declarant_id ON sinistre (declarant_id);
 
@@ -1111,7 +1088,175 @@ COMMENT ON COLUMN rapport_visite.duree_min IS 'Durée';
 COMMENT ON COLUMN rapport_visite.conseils IS 'Conseils et observations';
 COMMENT ON COLUMN rapport_visite.nb_exploitants IS 'Nombre d’exploitants rencontrés';
 CREATE INDEX idx_rapport_visite_agent_id ON rapport_visite (agent_id);
-CREATE INDEX idx_rapport_visite_exploitation_id ON rapport_visite (exploitation_id);
+
+-- ==================================================================
+-- INDEX SECONDAIRES (PERFORMANCE)
+-- ==================================================================
+-- Index composites, partiels, couvrants et spécialisés (GiST, GIN, BRIN).
+-- Les index de clés étrangères couverts par le préfixe gauche ne sont pas dupliqués.
+
+-- Liste des destinataires d’une alerte par zone, sans lecture de la table (RF-23, RG-04).
+CREATE INDEX idx_utilisateur_actif_zone ON utilisateur (zone_id) INCLUDE (telephone) WHERE statut = 'actif';
+
+-- Un seul rôle actif par couple utilisateur/rôle ; contrôle des droits en une lecture (RF-02, RG-07).
+CREATE UNIQUE INDEX idx_utilisateur_role_actif ON utilisateur_role (utilisateur_id, role_id) WHERE actif;
+
+-- Un seul seuil actif par zone et type (RF-50) ; lu par v_indicateur_pluie.
+CREATE UNIQUE INDEX idx_seuil_alerte_actif ON seuil_alerte (zone_id, type_alerte) WHERE actif;
+
+-- Historique d’un objet précis, du plus récent au plus ancien (RF-49).
+CREATE INDEX idx_journal_audit_entite ON journal_audit (entite, entite_id, date_action DESC);
+
+-- Table append-only : BRIN tient en quelques pages et sert les purges et extractions par période.
+CREATE INDEX idx_journal_audit_date ON journal_audit USING brin (date_action);
+
+-- Tableaux de bord et ciblage par zone (RF-05, RF-38).
+CREATE INDEX idx_exploitation_zone ON exploitation (zone_id, statut);
+
+-- Liste et somme des surfaces d’une exploitation sans lire la table (RF-05, RF-37).
+CREATE INDEX idx_parcelle_exploitation ON parcelle (exploitation_id, statut) INCLUDE (superficie_ha);
+
+-- Intersection parcelle / zone sinistrée et cartographie (RF-08, RF-45).
+CREATE INDEX idx_parcelle_geometrie ON parcelle USING gist (geometrie) WHERE geometrie IS NOT NULL;
+
+-- Calendrier d’une parcelle pour une campagne (RF-09, RG-01).
+CREATE INDEX idx_cycle_cultural_parcelle ON cycle_cultural (parcelle_id, campagne_id);
+
+-- Étapes d’un cycle dans l’ordre chronologique (RF-09, RF-12).
+CREATE INDEX idx_etape_planifiee_cycle ON etape_planifiee (cycle_id, date_prevue);
+
+-- Rappels du jour : l’index ne contient que les étapes à venir (RF-12).
+CREATE INDEX idx_etape_planifiee_rappels ON etape_planifiee (date_prevue) INCLUDE (cycle_id, etape_code) WHERE statut = 'prevue';
+
+-- File des décalages en attente de validation (RF-11, RG-05).
+CREATE INDEX idx_decalage_a_valider ON decalage (statut, date_proposee) WHERE statut = 'propose';
+
+-- Dernière récolte d’un cycle, rendement et historique (RF-37).
+CREATE INDEX idx_recolte_cycle_date ON recolte (cycle_id, date_recolte DESC);
+
+-- Matériel déclaré par une exploitation, utilisé pour les conseils (RF-06, RF-39).
+CREATE INDEX idx_possession_exploitation ON possession_materiel (exploitation_id, type_materiel_id);
+
+-- Fiches publiées d’une étape culturale, les plus récentes d’abord (RF-14).
+CREATE INDEX idx_fiche_technique_etape ON fiche_technique (etape_code, statut, date_publication DESC);
+
+-- Recherche libre (ILIKE « %mot% ») dans les fiches sans parcours complet (RF-14).
+CREATE INDEX idx_fiche_technique_recherche ON fiche_technique USING gin (titre_fr gin_trgm_ops, resume_fr gin_trgm_ops);
+
+-- Illustrations, vidéos et audios d’une fiche par type (RF-15).
+CREATE INDEX idx_media_fiche ON media (fiche_id, type_media);
+
+-- Progression d’un apprenant dans ses formations (RF-17).
+CREATE INDEX idx_inscription_utilisateur ON inscription_formation (utilisateur_id, statut);
+
+-- Une seule inscription par utilisateur et par formation (RF-17).
+CREATE UNIQUE INDEX idx_inscription_unique ON inscription_formation (utilisateur_id, formation_id);
+
+-- Bandeau des alertes en cours, les plus récentes d’abord (RF-20, RG-04).
+CREATE INDEX idx_alerte_emise ON alerte (date_emission DESC) WHERE statut = 'emise';
+
+-- Évite de diffuser deux fois la même alerte dans la même zone (RF-23, RG-04).
+CREATE UNIQUE INDEX idx_ciblage_alerte_unique ON ciblage_alerte (alerte_id, zone_id);
+
+-- Évite les doublons de ciblage d’un message (RF-18).
+CREATE UNIQUE INDEX idx_ciblage_message_unique ON ciblage_message (message_id, zone_id);
+
+-- Boîte de réception d’un utilisateur, la plus récente d’abord (RF-21, RF-24).
+CREATE INDEX idx_notification_utilisateur ON notification (utilisateur_id, date_envoi DESC);
+
+-- File d’envoi : ne stocke que les messages à traiter, balayage d’index seul (RF-21, RF-24).
+CREATE INDEX idx_notification_a_envoyer ON notification (date_envoi) INCLUDE (utilisateur_id, canal, alerte_id) WHERE statut IN ('en_attente', 'echec');
+
+-- Compteur de messages non lus, sans lire l’historique complet (RF-24).
+CREATE INDEX idx_notification_non_lues ON notification (utilisateur_id) INCLUDE (date_envoi) WHERE date_lecture IS NULL;
+
+-- Suivi de la diffusion d’une alerte (envoyés, échecs) (RG-04).
+CREATE INDEX idx_notification_alerte ON notification (alerte_id, statut);
+
+-- Cumuls à 10 et 20 jours par zone (v_indicateur_pluie) et rejet des imports en double (RF-25).
+CREATE UNIQUE INDEX idx_pluie_zone_date_source ON donnee_pluviometrique (zone_id, date_mesure DESC, source);
+
+-- Recherche d’un matériel disponible dans une zone (v_disponibilite_materiel, RF-26, RF-27).
+CREATE INDEX idx_equipement_disponible ON equipement (zone_id, type_materiel_id) INCLUDE (quantite, tarif_journalier_mga) WHERE etat = 'disponible';
+
+-- Détection des chevauchements de réservation et calcul de disponibilité (RF-27).
+CREATE INDEX idx_reservation_periode ON reservation (equipement_id, date_debut, date_fin) INCLUDE (statut);
+
+-- Suivi des demandes d’un exploitant (RF-28).
+CREATE INDEX idx_reservation_demandeur ON reservation (demandeur_id, statut);
+
+-- Dernière maintenance et coût par équipement (RF-29).
+CREATE INDEX idx_maintenance_equipement ON maintenance (equipement_id, date_intervention DESC);
+
+-- Membres actifs d’un grenier (RF-31, RF-32).
+CREATE INDEX idx_membre_gcv_gcv ON membre_gcv (gcv_id, statut);
+
+-- Greniers fréquentés par une exploitation (RF-32).
+CREATE INDEX idx_membre_gcv_exploitation ON membre_gcv (exploitation_id, statut);
+
+-- Agrégat de v_stock_gcv calculé par balayage d’index seul, sans lire la table (RF-31).
+CREATE INDEX idx_mouvement_stock_membre ON mouvement_stock (membre_id, qualite) INCLUDE (type_mouvement, quantite_kg);
+
+-- Journal append-only : BRIN pour les états et purges par période (RF-31, RF-32).
+CREATE INDEX idx_mouvement_stock_date ON mouvement_stock USING brin (date_mouvement);
+
+-- Dernières décisions d’un grenier, préalables à un retrait (RF-34, RG-06).
+CREATE INDEX idx_decision_collective_gcv ON decision_collective (gcv_id, date_decision DESC);
+
+-- Un seul reçu par mouvement (association 1,1 A59, RF-32).
+CREATE UNIQUE INDEX idx_recu_mouvement ON recu (mouvement_id);
+
+-- File d’instruction des demandes de crédit (RF-33).
+CREATE INDEX idx_demande_credit_file ON demande_credit (statut, date_demande) WHERE statut IN ('soumise', 'etude');
+
+-- Crédits d’une exploitation pour une campagne (RF-33, RF-36).
+CREATE INDEX idx_demande_credit_exploitation ON demande_credit (exploitation_id, campagne_id);
+
+-- Dernier prix connu par zone et variété (RF-35).
+CREATE INDEX idx_prix_marche_lookup ON prix_marche (zone_id, variete_id, date_releve DESC);
+
+-- File de traitement BNGRC, du sinistre le plus récent au plus ancien (RF-43).
+CREATE INDEX idx_sinistre_statut ON sinistre (statut, date_survenance DESC);
+
+-- Sinistralité d’une parcelle sur plusieurs campagnes (RF-42, RF-45).
+CREATE INDEX idx_sinistre_parcelle ON sinistre (parcelle_id, date_survenance DESC);
+
+-- Suivi des signalements d’infrastructure par état (RF-44).
+CREATE INDEX idx_signalement_statut ON signalement_infra (statut, date_signalement DESC);
+
+-- Dernières visites d’une exploitation (RF-41).
+CREATE INDEX idx_rapport_visite_exploitation ON rapport_visite (exploitation_id, date_visite DESC);
+
+-- ==================================================================
+-- PARAMÈTRES DE STOCKAGE ET D’AUTOVACUUM
+-- ==================================================================
+
+-- 5 à 10 M lignes/an, statut et date_lecture modifiés en continu.
+ALTER TABLE notification SET (fillfactor = 85, autovacuum_vacuum_scale_factor = 0.02, autovacuum_analyze_scale_factor = 0.02);
+
+-- Dates réelles et statuts mis à jour au fil de la campagne.
+ALTER TABLE etape_planifiee SET (fillfactor = 90, autovacuum_analyze_scale_factor = 0.05);
+
+-- Changements de statut fréquents (demandée → confirmée → close).
+ALTER TABLE reservation SET (fillfactor = 90);
+
+-- État et quantité réévalués à chaque réservation.
+ALTER TABLE equipement SET (fillfactor = 90);
+
+-- Passage signalé → transmis → traité, avec pièces jointes.
+ALTER TABLE sinistre SET (fillfactor = 90);
+
+-- Ligne complétée à la fin de chaque synchronisation.
+ALTER TABLE synchronisation SET (fillfactor = 90);
+
+-- Peu de mises à jour, mais diffusion massive en lecture.
+ALTER TABLE alerte SET (fillfactor = 95);
+
+-- Insertion seule : pages pleines, purge mensuelle.
+ALTER TABLE journal_audit SET (fillfactor = 100, autovacuum_vacuum_scale_factor = 0.05, autovacuum_analyze_scale_factor = 0.05);
+
+-- Insertion seule : écritures comptables jamais modifiées.
+ALTER TABLE mouvement_stock SET (fillfactor = 100, autovacuum_analyze_scale_factor = 0.05);
 
 -- ==================================================================
 -- VUES ET CALCULS DÉRIVÉS
@@ -1187,3 +1332,12 @@ LEFT JOIN recolte r ON r.cycle_id = cy.id
 LEFT JOIN v_rendement_parcelle rp ON rp.parcelle_id = pa.id
 LEFT JOIN sinistre si ON si.parcelle_id = pa.id
 GROUP BY z.id, z.code, z.nom, z.type_zone, c.id;
+
+-- Rafraîchissement concurrent et lecture par zone/campagne (RF-38, RF-40).
+CREATE UNIQUE INDEX idx_v_tableau_bord_zone ON v_tableau_bord_zone (zone_id, campagne_id);
+
+-- Filtre par campagne dans les tableaux de bord nationaux.
+CREATE INDEX idx_v_tableau_bord_campagne ON v_tableau_bord_zone (campagne_id);
+
+-- Rafraîchissement nocturne, sans bloquer les lectures.
+-- REFRESH MATERIALIZED VIEW CONCURRENTLY v_tableau_bord_zone;

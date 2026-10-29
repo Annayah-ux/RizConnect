@@ -4,7 +4,17 @@
  * Sorties : DOT (Graphviz), Mermaid, DDL SQL.
  * Les images (SVG/PNG) sont produites par `build.mjs`.
  */
-import { entities, associations, domains, mctFlows, etats, vues } from './model.mjs';
+import {
+  entities,
+  associations,
+  domains,
+  mctFlows,
+  etats,
+  vues,
+  perfIndexes,
+  storageParams,
+  matviewIndexes,
+} from './model.mjs';
 
 /* ------------------------------------------------------------------ */
 /* Utilitaires                                                         */
@@ -396,6 +406,79 @@ const cascade = (id) =>
     'RECU',
   ].includes(id);
 
+/* ------------------------------------------------------------------ */
+/* Index secondaires et inventaire                                     */
+/* ------------------------------------------------------------------ */
+
+const tableByName = new Map(entities.map((e) => [snake(e.id), e]));
+
+/** Vérifie qu'une colonne existe bien dans la table visée (garde-fou du modèle). */
+function assertColumn(table, bare) {
+  const e = tableByName.get(table);
+  if (!e) throw new Error(`index sur une table inconnue : ${table}`);
+  const cols = tableColumns(e).map((a) => a.n);
+  if (!cols.includes(bare)) throw new Error(`index ${table}.${bare} : colonne inconnue`);
+}
+
+/** Teste si un index de clé étrangère est déjà couvert par le préfixe gauche. */
+export function fkIndexCovered(table, col) {
+  return perfIndexes.some(
+    (i) => snake(i.table) === table && i.method === 'btree' && !i.where && i.cols[0].split(/\s+/)[0] === col,
+  );
+}
+
+/** Clause USING … d'un index (btree implicite). */
+function usingClause(i) {
+  const method = i.method || 'btree';
+  if (method === 'btree') return '';
+  const opclass = i.opclass ? (Array.isArray(i.opclass) ? i.opclass : i.cols.map(() => i.opclass)) : [];
+  const cols = i.cols.map((c, k) => (opclass[k] ? `${c} ${opclass[k]}` : c));
+  return ` USING ${method} (${cols.join(', ')})`;
+}
+
+/** Instruction CREATE INDEX d'un index secondaire. */
+export function indexSql(i) {
+  if (i.view) {
+    if (!vues.some((v) => v.nom === i.view)) throw new Error(`vue inconnue : ${i.view}`);
+  } else {
+    const table = snake(i.table);
+    i.cols.forEach((c) => assertColumn(table, c.split(/\s+/)[0]));
+    (i.include || []).forEach((c) => assertColumn(table, c));
+  }
+  const target = i.view || snake(i.table);
+  const cols = (i.method || 'btree') === 'btree'
+    ? ` (${i.cols.join(', ')})${i.include ? ` INCLUDE (${i.include.join(', ')})` : ''}`
+    : usingClause(i);
+  return `CREATE ${i.unique ? 'UNIQUE ' : ''}INDEX ${i.name} ON ${target}${cols}${i.where ? ` WHERE ${i.where}` : ''};`;
+}
+
+/** Inventaire complet des index émis dans le DDL. */
+export function indexInventory() {
+  const rows = [];
+  for (const e of entities) {
+    const t = snake(e.id);
+    for (const f of fkColumns(e.id)) {
+      if (fkIndexCovered(t, f.n)) continue;
+      rows.push({ name: `idx_${t}_${f.n}`, table: t, cols: f.n, kind: 'FK', why: 'jointure et intégrité référentielle' });
+    }
+  }
+  for (const i of perfIndexes) {
+    rows.push({
+      name: i.name,
+      table: snake(i.table),
+      cols: i.cols.join(', '),
+      kind: i.unique ? 'unique' : i.method === 'btree' ? 'composite' : i.method,
+      where: i.where || '',
+      include: (i.include || []).join(', '),
+      why: i.why,
+    });
+  }
+  for (const i of matviewIndexes) {
+    rows.push({ name: i.name, table: i.view, cols: i.cols.join(', '), kind: i.unique ? 'unique' : 'composite', why: i.why });
+  }
+  return rows;
+}
+
 export function ddl() {
   const out = [];
   out.push('-- RizConnect Madagascar — schéma relationnel (MLD)');
@@ -404,6 +487,8 @@ export function ddl() {
   out.push('');
   out.push('CREATE EXTENSION IF NOT EXISTS postgis;');
   out.push('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
+  out.push('-- pg_trgm : recherche libre par trigrammes (index GIN des fiches techniques).');
+  out.push('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
   out.push('');
 
   for (const d of domains) {
@@ -442,10 +527,34 @@ export function ddl() {
         out.push(`COMMENT ON COLUMN ${name}.${a.n} IS '${a.d.replace(/'/g, "''")}';`);
       }
       for (const f of fks) {
+        if (fkIndexCovered(name, f.n)) continue; // déjà couvert par le préfixe gauche d'un index composite
         out.push(`CREATE INDEX idx_${name}_${f.n} ON ${name} (${f.n});`);
       }
       out.push('');
     }
+  }
+
+  out.push('-- ==================================================================');
+  out.push('-- INDEX SECONDAIRES (PERFORMANCE)');
+  out.push('-- ==================================================================');
+  out.push('-- Index composites, partiels, couvrants et spécialisés (GiST, GIN, BRIN).');
+  out.push('-- Les index de clés étrangères couverts par le préfixe gauche ne sont pas dupliqués.');
+  out.push('');
+  for (const i of perfIndexes) {
+    out.push(`-- ${i.why}`);
+    out.push(indexSql(i));
+    out.push('');
+  }
+
+  out.push('-- ==================================================================');
+  out.push('-- PARAMÈTRES DE STOCKAGE ET D’AUTOVACUUM');
+  out.push('-- ==================================================================');
+  out.push('');
+  for (const s of storageParams) {
+    const params = Object.entries(s.params).map(([k, v]) => `${k} = ${v}`).join(', ');
+    out.push(`-- ${s.why}`);
+    out.push(`ALTER TABLE ${snake(s.table)} SET (${params});`);
+    out.push('');
   }
 
   out.push('-- ==================================================================');
@@ -456,6 +565,14 @@ export function ddl() {
     out.push(`-- ${v.nom} : ${v.but}`);
     out.push(v.sql);
     out.push('');
+    for (const i of matviewIndexes.filter((x) => x.view === v.nom)) {
+      out.push(`-- ${i.why}`);
+      out.push(indexSql(i));
+      out.push('');
+    }
   }
+  out.push('-- Rafraîchissement nocturne, sans bloquer les lectures.');
+  out.push('-- REFRESH MATERIALIZED VIEW CONCURRENTLY v_tableau_bord_zone;');
+  out.push('');
   return out.join('\n');
 }

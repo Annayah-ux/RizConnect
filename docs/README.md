@@ -6,9 +6,9 @@ des charges [`hh.sh`](../hh.sh) (modules M1 à M10, règles RG-01 à RG-07).
 | Document | Contenu | Diagramme |
 | --- | --- | --- |
 | [MCD.md](MCD.md) | Modèle conceptuel : 49 entités, 79 associations, dictionnaire des données | `images/mcd.svg` / `.png` |
-| [MLD.md](MLD.md) | Modèle logique : 49 tables, 349 colonnes, contraintes, index, vues | `images/mld.svg` / `.png` |
+| [MLD.md](MLD.md) | Modèle logique : 49 tables, 349 colonnes, contraintes, 99 index, vues | `images/mld.svg` / `.png` |
 | [MCT.md](MCT.md) | Modèle conceptuel des traitements : 36 événements, 41 opérations, 9 cycles de vie | `images/mct.svg`, `images/mct-etats.svg` |
-| [sql/schema.sql](sql/schema.sql) | DDL PostgreSQL 16 + PostGIS, généré depuis le modèle | — |
+| [sql/schema.sql](sql/schema.sql) | DDL PostgreSQL 16 + PostGIS, index de performance et paramètres de stockage, généré depuis le modèle | — |
 
 ## Aperçu
 
@@ -42,7 +42,7 @@ docs/
 ├── sources/             sources Graphviz (.dot) et Mermaid (.mmd)
 ├── sql/                 script de création de la base
 └── tools/               générateur (modèle unique → diagrammes + documents)
-    ├── model.mjs        entités, associations, MCT, vues
+    ├── model.mjs        entités, associations, MCT, vues, index et paramètres de stockage
     ├── render.mjs       rendu DOT / Mermaid / SQL
     ├── build.mjs        génération des images et des documents
     └── templates/       gabarits Markdown
@@ -79,3 +79,12 @@ générés.
   le MCD.
 - Chaque entité, association et exigence porte la référence du cahier des charges
   (`RF-xx`, `RG-xx`) qui la justifie.
+
+## Performances
+
+Le DDL n'est pas seulement structurel : il contient 44 index secondaires
+(composites, partiels, couvrants, GiST, GIN, BRIN), des paramètres `fillfactor` et
+d'autovacuum pour les tables les plus sollicitées, et l'index unique qui permet le
+rafraîchissement concurrent de la vue matérialisée. Les choix sont justifiés un par un au
+[§ 9 du MLD](MLD.md#9-index-et-performances) ; le mode d'emploi est dans
+[`sql/README.md`](sql/README.md).

@@ -33,7 +33,9 @@ import {
   tableColumns,
   fkColumns,
   pkOf,
+  indexInventory,
 } from './render.mjs';
+import { perfIndexes, storageParams, matviewIndexes } from './model.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const docs = resolve(here, '..');
@@ -291,6 +293,40 @@ const indexList = entities
   .flatMap((e) => fkColumns(e.id).map((f) => `\`idx_${snake(e.id)}_${f.n}\``))
   .join(', ');
 
+/* --------------------- Performance : index / stockage --------------- */
+
+const inventory = indexInventory();
+
+const perfTable = [
+  '| Index | Table | Type | Colonnes | Filtre / INCLUDE | Justification |',
+  '| --- | --- | :--: | --- | --- | --- |',
+  ...perfIndexes.map((i) => {
+    const kind = i.unique ? 'unique' : i.method === 'btree' ? 'composite' : i.method.toUpperCase();
+    const extra = [i.include ? `INCLUDE (${i.include.join(', ')})` : '', i.where ? `\`WHERE ${i.where}\`` : '']
+      .filter(Boolean)
+      .join('<br/>');
+    return `| \`${i.name}\` | \`${snake(i.table)}\` | ${kind} | ${i.cols.map((c) => `\`${c}\``).join(', ')} | ${extra || '—'} | ${mdEscape(i.why)} |`;
+  }),
+  '',
+].join('\n');
+
+const storageTable = [
+  '| Table | Paramètres | Raison |',
+  '| --- | --- | --- |',
+  ...storageParams.map((s) => {
+    const p = Object.entries(s.params).map(([k, v]) => `\`${k} = ${v}\``).join(', ');
+    return `| \`${snake(s.table)}\` | ${p} | ${mdEscape(s.why)} |`;
+  }),
+  '',
+].join('\n');
+
+const uniqueCount =
+  entities.reduce((n, e) => n + e.attrs.filter((a) => a.k.includes('UK')).length, 0) +
+  perfIndexes.filter((i) => i.unique).length +
+  matviewIndexes.filter((i) => i.unique).length;
+const checkCount = entities.reduce((n, e) => n + e.attrs.filter((a) => a.en).length, 0);
+const fkIndexCount = inventory.filter((r) => r.kind === 'FK').length;
+
 /* --------------------------- MCT fragments ------------------------- */
 
 const allChains = mctFlows.flatMap((m) => m.chains.map((c) => ({ module: m.module, moduleLabel: m.label, ...c })));
@@ -369,6 +405,11 @@ const counts = {
   ETATS: Object.keys(etats).length,
   VUES: vues.length,
   REGLES: regles.length,
+  INDEX: inventory.length,
+  INDEX_FK: fkIndexCount,
+  PERF: perfIndexes.length,
+  UNIQUES: uniqueCount,
+  CHECKS: checkCount,
 };
 
 const fragments = {
@@ -393,7 +434,9 @@ const fragments = {
   MLD_DETAIL: mldDetail,
   MLD_MAPPING: mldMapping,
   VUES: vuesMd,
-  INDEX_LIST: indexList,
+  INDEX_LIST: inventory.filter((r) => r.kind === 'FK').map((r) => `\`${r.name}\``).join(', '),
+  PERF_INDEX_TABLE: perfTable,
+  STORAGE_TABLE: storageTable,
   MERMAID_MCD: '```mermaid\n' + mcdMermaid() + '\n```',
   MERMAID_MLD: '```mermaid\n' + mldMermaid() + '\n```',
   MERMAID_ETATS: mermaidEtats,

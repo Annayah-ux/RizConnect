@@ -97,8 +97,9 @@ Chaque table est décrite avec ses colonnes, ses types et ses contraintes. Les c
 | --- | --: | --- |
 | Clés primaires | {{COUNTS.TABLES}} | une par table |
 | Clés étrangères | {{COUNTS.ASSOCIATIONS}} | toutes les associations du MCD |
-| Clés candidates (`UNIQUE`) | 12 | téléphone, e-mail, codes, numéro de reçu |
-| Contraintes de domaine (`CHECK`) | 34 | énumérations `statut`, `type_*`, `niveau` |
+| Clés candidates et index uniques | {{COUNTS.UNIQUES}} | téléphone, e-mail, codes, numéro de reçu, absence de doublons métier |
+| Contraintes de domaine (`CHECK`) | {{COUNTS.CHECKS}} | énumérations `statut`, `type_*`, `niveau` |
+| Index (toutes natures) | {{COUNTS.INDEX}} | {{COUNTS.INDEX_FK}} de clés étrangères + {{COUNTS.PERF}} secondaires et 2 sur la vue matérialisée |
 
 ### 7.2 Contraintes métier non déclaratives
 
@@ -143,20 +144,55 @@ exigences de pilotage (RF-25, RF-31, RF-37, RF-38, RF-39).
 
 ## 9. Index et performances
 
-Les index couvrent les trois usages critiques : la synchronisation mobile (lecture par
-utilisateur et par zone), la diffusion d'alerte (envoi massif par zone) et les tableaux
-de bord (agrégats par campagne).
+Le DDL est calibré pour les lectures les plus fréquentes de la plateforme : boîte de
+réception et diffusion d'alertes, rappels culturaux du jour, stocks du GCV, disponibilité
+du matériel, files de traitement BNGRC et IMF, tableaux de bord par zone.
 
-| Index | Table(s) | Justification |
-| --- | --- | --- |
-| `idx_<table>_<fk>` | toutes les tables portant une FK | jointures et intégrité référentielle ({{COUNTS.ASSOCIATIONS}} index) |
-| `idx_etape_planifiee_date_prevue` | `etape_planifiee` | sélection des rappels du jour (RF-12) |
-| `idx_notification_statut` | `notification` | rejeu des envois en échec (RF-21, RF-24) |
-| `idx_alerte_zone_dates` | `alerte`, `ciblage_alerte` | diffusion prioritaire sous 15 min (RG-04) |
-| `idx_mouvement_stock_gcv_date` | `mouvement_stock` | calcul du stock et des reçus (RF-31) |
-| `idx_parcelle_geometrie` (GiST) | `parcelle` | cartographie des zones sinistrées (RF-45) |
-| `idx_sinistre_statut` | `sinistre` | suivi du traitement par le BNGRC (RF-43) |
-| `idx_donnee_pluviometrique_zone_date` | `donnee_pluviometrique` | cumuls à 10 et 20 jours (RF-25) |
+Quatre règles ont guidé la génération :
+
+1. **Pas d'index en double.** Chaque clé étrangère reçoit un index, sauf lorsqu'un index
+   composite commence déjà par la même colonne : {{COUNTS.INDEX_FK}} index couvrent les
+   {{COUNTS.ASSOCIATIONS}} clés étrangères.
+2. **Filtre puis tri.** Les index composites placent la colonne d'égalité (zone, cycle,
+   utilisateur, équipement) avant les colonnes de plage ou de tri (`date_* DESC`).
+3. **Index partiels** pour les files de travail : seules les lignes utiles sont indexées
+   (`statut = 'prevue'`, `date_lecture IS NULL`, `etat = 'disponible'`), ce qui réduit la
+   taille de l'index et le coût des écritures.
+4. **Index couvrants (`INCLUDE`)** quand l'écran n'a besoin que de quelques colonnes :
+   le moteur répond par balayage d'index seul, sans lire la table (`telephone` pour les
+   SMS, `quantite_kg` pour le stock, `quantite` pour le matériel).
+
+Les index spécialisés complètent l'ensemble :
+
+- **GiST** sur `parcelle.geometrie` pour les recherches spatiales (sinistres, cartographie) ;
+- **GIN trigramme** (`pg_trgm`) sur les fiches techniques pour la recherche libre `ILIKE '%mot%'` ;
+- **BRIN** sur les journaux append-only (`journal_audit`, `mouvement_stock`), où un index
+  compact suffit pour les extractions et purges par période.
+
+{{PERF_INDEX_TABLE}}
+
+### 9.1 Paramètres de stockage
+
+Une marge de remplissage (`fillfactor`) inférieure à 100 laisse de la place aux mises à
+jour sur place (*HOT updates*), qui n'ont alors pas à réécrire les index. Les tables
+journalisées en insertion seule restent à 100. L'autovacuum est rendu plus réactif sur
+les tables à fort volume.
+
+{{STORAGE_TABLE}}
+
+### 9.2 Vue matérialisée
+
+`v_tableau_bord_zone` porte un index unique `(zone_id, campagne_id)`, indispensable à
+`REFRESH MATERIALIZED VIEW CONCURRENTLY` : le rafraîchissement nocturne ne bloque plus les
+lectures des tableaux de bord. Le second index sert les filtres par campagne.
+
+### 9.3 Compromis lecture / écriture
+
+Chaque index ralentit légèrement les insertions et consomme de l'espace. Le jeu ci-dessus
+reste volontairement ciblé : {{COUNTS.INDEX}} index au total pour {{COUNTS.TABLES}} tables.
+Les index inutilisés doivent être repérés en production avec `pg_stat_user_indexes`
+(`idx_scan = 0`) avant d'être supprimés, et les requêtes lentes analysées avec `EXPLAIN
+(ANALYZE, BUFFERS)`.
 
 Liste générée des index de clés étrangères :
 {{INDEX_LIST}}
@@ -198,11 +234,18 @@ Le schéma est en **troisième forme normale (3FN)** :
 | `donnee_pluviometrique` | 150 000 | ~15 Mo | conservation 20 ans (séries climatiques) |
 | `photo_sinistre` | 50 000 | objets S3 ~5 Go | URL en base, fichiers hors base |
 
+Le partitionnement et les purges indiqués ci-dessus sont des **recommandations
+d'exploitation** : le DDL livré reste volontairement non partitionné, car le
+partitionnement PostgreSQL exige d'inclure la clé de partition dans chaque clé primaire
+(ce qui modifierait les identifiants UUID et les clés étrangères). Il s'active au
+déploiement, par exemple avec `pg_partman` sur `notification` et `journal_audit`.
+
 ---
 
 ## 12. Script de création
 
-Le DDL complet (tables, contraintes, commentaires, index, vues) est disponible ici :
+Le DDL complet (tables, contraintes, commentaires, index, paramètres de stockage, vues)
+est disponible ici :
 
 - [`sql/schema.sql`](sql/schema.sql) — script généré, exécutable tel quel ;
 - [`sql/README.md`](sql/README.md) — ordre d'exécution et prérequis.

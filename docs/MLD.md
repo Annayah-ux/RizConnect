@@ -1627,8 +1627,9 @@ Clé primaire : `id`.
 | --- | --: | --- |
 | Clés primaires | 49 | une par table |
 | Clés étrangères | 79 | toutes les associations du MCD |
-| Clés candidates (`UNIQUE`) | 12 | téléphone, e-mail, codes, numéro de reçu |
-| Contraintes de domaine (`CHECK`) | 34 | énumérations `statut`, `type_*`, `niveau` |
+| Clés candidates et index uniques | 17 | téléphone, e-mail, codes, numéro de reçu, absence de doublons métier |
+| Contraintes de domaine (`CHECK`) | 49 | énumérations `statut`, `type_*`, `niveau` |
+| Index (toutes natures) | 99 | 53 de clés étrangères + 44 secondaires et 2 sur la vue matérialisée |
 
 ### 7.2 Contraintes métier non déclaratives
 
@@ -1768,23 +1769,115 @@ GROUP BY z.id, z.code, z.nom, z.type_zone, c.id;
 
 ## 9. Index et performances
 
-Les index couvrent les trois usages critiques : la synchronisation mobile (lecture par
-utilisateur et par zone), la diffusion d'alerte (envoi massif par zone) et les tableaux
-de bord (agrégats par campagne).
+Le DDL est calibré pour les lectures les plus fréquentes de la plateforme : boîte de
+réception et diffusion d'alertes, rappels culturaux du jour, stocks du GCV, disponibilité
+du matériel, files de traitement BNGRC et IMF, tableaux de bord par zone.
 
-| Index | Table(s) | Justification |
+Quatre règles ont guidé la génération :
+
+1. **Pas d'index en double.** Chaque clé étrangère reçoit un index, sauf lorsqu'un index
+   composite commence déjà par la même colonne : 53 index couvrent les
+   79 clés étrangères.
+2. **Filtre puis tri.** Les index composites placent la colonne d'égalité (zone, cycle,
+   utilisateur, équipement) avant les colonnes de plage ou de tri (`date_* DESC`).
+3. **Index partiels** pour les files de travail : seules les lignes utiles sont indexées
+   (`statut = 'prevue'`, `date_lecture IS NULL`, `etat = 'disponible'`), ce qui réduit la
+   taille de l'index et le coût des écritures.
+4. **Index couvrants (`INCLUDE`)** quand l'écran n'a besoin que de quelques colonnes :
+   le moteur répond par balayage d'index seul, sans lire la table (`telephone` pour les
+   SMS, `quantite_kg` pour le stock, `quantite` pour le matériel).
+
+Les index spécialisés complètent l'ensemble :
+
+- **GiST** sur `parcelle.geometrie` pour les recherches spatiales (sinistres, cartographie) ;
+- **GIN trigramme** (`pg_trgm`) sur les fiches techniques pour la recherche libre `ILIKE '%mot%'` ;
+- **BRIN** sur les journaux append-only (`journal_audit`, `mouvement_stock`), où un index
+  compact suffit pour les extractions et purges par période.
+
+| Index | Table | Type | Colonnes | Filtre / INCLUDE | Justification |
+| --- | --- | :--: | --- | --- | --- |
+| `idx_utilisateur_actif_zone` | `utilisateur` | composite | `zone_id` | INCLUDE (telephone)<br/>`WHERE statut = 'actif'` | Liste des destinataires d’une alerte par zone, sans lecture de la table (RF-23, RG-04). |
+| `idx_utilisateur_role_actif` | `utilisateur_role` | unique | `utilisateur_id`, `role_id` | `WHERE actif` | Un seul rôle actif par couple utilisateur/rôle ; contrôle des droits en une lecture (RF-02, RG-07). |
+| `idx_seuil_alerte_actif` | `seuil_alerte` | unique | `zone_id`, `type_alerte` | `WHERE actif` | Un seul seuil actif par zone et type (RF-50) ; lu par v_indicateur_pluie. |
+| `idx_journal_audit_entite` | `journal_audit` | composite | `entite`, `entite_id`, `date_action DESC` | — | Historique d’un objet précis, du plus récent au plus ancien (RF-49). |
+| `idx_journal_audit_date` | `journal_audit` | BRIN | `date_action` | — | Table append-only : BRIN tient en quelques pages et sert les purges et extractions par période. |
+| `idx_exploitation_zone` | `exploitation` | composite | `zone_id`, `statut` | — | Tableaux de bord et ciblage par zone (RF-05, RF-38). |
+| `idx_parcelle_exploitation` | `parcelle` | composite | `exploitation_id`, `statut` | INCLUDE (superficie_ha) | Liste et somme des surfaces d’une exploitation sans lire la table (RF-05, RF-37). |
+| `idx_parcelle_geometrie` | `parcelle` | GIST | `geometrie` | `WHERE geometrie IS NOT NULL` | Intersection parcelle / zone sinistrée et cartographie (RF-08, RF-45). |
+| `idx_cycle_cultural_parcelle` | `cycle_cultural` | composite | `parcelle_id`, `campagne_id` | — | Calendrier d’une parcelle pour une campagne (RF-09, RG-01). |
+| `idx_etape_planifiee_cycle` | `etape_planifiee` | composite | `cycle_id`, `date_prevue` | — | Étapes d’un cycle dans l’ordre chronologique (RF-09, RF-12). |
+| `idx_etape_planifiee_rappels` | `etape_planifiee` | composite | `date_prevue` | INCLUDE (cycle_id, etape_code)<br/>`WHERE statut = 'prevue'` | Rappels du jour : l’index ne contient que les étapes à venir (RF-12). |
+| `idx_decalage_a_valider` | `decalage` | composite | `statut`, `date_proposee` | `WHERE statut = 'propose'` | File des décalages en attente de validation (RF-11, RG-05). |
+| `idx_recolte_cycle_date` | `recolte` | composite | `cycle_id`, `date_recolte DESC` | — | Dernière récolte d’un cycle, rendement et historique (RF-37). |
+| `idx_possession_exploitation` | `possession_materiel` | composite | `exploitation_id`, `type_materiel_id` | — | Matériel déclaré par une exploitation, utilisé pour les conseils (RF-06, RF-39). |
+| `idx_fiche_technique_etape` | `fiche_technique` | composite | `etape_code`, `statut`, `date_publication DESC` | — | Fiches publiées d’une étape culturale, les plus récentes d’abord (RF-14). |
+| `idx_fiche_technique_recherche` | `fiche_technique` | GIN | `titre_fr`, `resume_fr` | — | Recherche libre (ILIKE « %mot% ») dans les fiches sans parcours complet (RF-14). |
+| `idx_media_fiche` | `media` | composite | `fiche_id`, `type_media` | — | Illustrations, vidéos et audios d’une fiche par type (RF-15). |
+| `idx_inscription_utilisateur` | `inscription_formation` | composite | `utilisateur_id`, `statut` | — | Progression d’un apprenant dans ses formations (RF-17). |
+| `idx_inscription_unique` | `inscription_formation` | unique | `utilisateur_id`, `formation_id` | — | Une seule inscription par utilisateur et par formation (RF-17). |
+| `idx_alerte_emise` | `alerte` | composite | `date_emission DESC` | `WHERE statut = 'emise'` | Bandeau des alertes en cours, les plus récentes d’abord (RF-20, RG-04). |
+| `idx_ciblage_alerte_unique` | `ciblage_alerte` | unique | `alerte_id`, `zone_id` | — | Évite de diffuser deux fois la même alerte dans la même zone (RF-23, RG-04). |
+| `idx_ciblage_message_unique` | `ciblage_message` | unique | `message_id`, `zone_id` | — | Évite les doublons de ciblage d’un message (RF-18). |
+| `idx_notification_utilisateur` | `notification` | composite | `utilisateur_id`, `date_envoi DESC` | — | Boîte de réception d’un utilisateur, la plus récente d’abord (RF-21, RF-24). |
+| `idx_notification_a_envoyer` | `notification` | composite | `date_envoi` | INCLUDE (utilisateur_id, canal, alerte_id)<br/>`WHERE statut IN ('en_attente', 'echec')` | File d’envoi : ne stocke que les messages à traiter, balayage d’index seul (RF-21, RF-24). |
+| `idx_notification_non_lues` | `notification` | composite | `utilisateur_id` | INCLUDE (date_envoi)<br/>`WHERE date_lecture IS NULL` | Compteur de messages non lus, sans lire l’historique complet (RF-24). |
+| `idx_notification_alerte` | `notification` | composite | `alerte_id`, `statut` | — | Suivi de la diffusion d’une alerte (envoyés, échecs) (RG-04). |
+| `idx_pluie_zone_date_source` | `donnee_pluviometrique` | unique | `zone_id`, `date_mesure DESC`, `source` | — | Cumuls à 10 et 20 jours par zone (v_indicateur_pluie) et rejet des imports en double (RF-25). |
+| `idx_equipement_disponible` | `equipement` | composite | `zone_id`, `type_materiel_id` | INCLUDE (quantite, tarif_journalier_mga)<br/>`WHERE etat = 'disponible'` | Recherche d’un matériel disponible dans une zone (v_disponibilite_materiel, RF-26, RF-27). |
+| `idx_reservation_periode` | `reservation` | composite | `equipement_id`, `date_debut`, `date_fin` | INCLUDE (statut) | Détection des chevauchements de réservation et calcul de disponibilité (RF-27). |
+| `idx_reservation_demandeur` | `reservation` | composite | `demandeur_id`, `statut` | — | Suivi des demandes d’un exploitant (RF-28). |
+| `idx_maintenance_equipement` | `maintenance` | composite | `equipement_id`, `date_intervention DESC` | — | Dernière maintenance et coût par équipement (RF-29). |
+| `idx_membre_gcv_gcv` | `membre_gcv` | composite | `gcv_id`, `statut` | — | Membres actifs d’un grenier (RF-31, RF-32). |
+| `idx_membre_gcv_exploitation` | `membre_gcv` | composite | `exploitation_id`, `statut` | — | Greniers fréquentés par une exploitation (RF-32). |
+| `idx_mouvement_stock_membre` | `mouvement_stock` | composite | `membre_id`, `qualite` | INCLUDE (type_mouvement, quantite_kg) | Agrégat de v_stock_gcv calculé par balayage d’index seul, sans lire la table (RF-31). |
+| `idx_mouvement_stock_date` | `mouvement_stock` | BRIN | `date_mouvement` | — | Journal append-only : BRIN pour les états et purges par période (RF-31, RF-32). |
+| `idx_decision_collective_gcv` | `decision_collective` | composite | `gcv_id`, `date_decision DESC` | — | Dernières décisions d’un grenier, préalables à un retrait (RF-34, RG-06). |
+| `idx_recu_mouvement` | `recu` | unique | `mouvement_id` | — | Un seul reçu par mouvement (association 1,1 A59, RF-32). |
+| `idx_demande_credit_file` | `demande_credit` | composite | `statut`, `date_demande` | `WHERE statut IN ('soumise', 'etude')` | File d’instruction des demandes de crédit (RF-33). |
+| `idx_demande_credit_exploitation` | `demande_credit` | composite | `exploitation_id`, `campagne_id` | — | Crédits d’une exploitation pour une campagne (RF-33, RF-36). |
+| `idx_prix_marche_lookup` | `prix_marche` | composite | `zone_id`, `variete_id`, `date_releve DESC` | — | Dernier prix connu par zone et variété (RF-35). |
+| `idx_sinistre_statut` | `sinistre` | composite | `statut`, `date_survenance DESC` | — | File de traitement BNGRC, du sinistre le plus récent au plus ancien (RF-43). |
+| `idx_sinistre_parcelle` | `sinistre` | composite | `parcelle_id`, `date_survenance DESC` | — | Sinistralité d’une parcelle sur plusieurs campagnes (RF-42, RF-45). |
+| `idx_signalement_statut` | `signalement_infra` | composite | `statut`, `date_signalement DESC` | — | Suivi des signalements d’infrastructure par état (RF-44). |
+| `idx_rapport_visite_exploitation` | `rapport_visite` | composite | `exploitation_id`, `date_visite DESC` | — | Dernières visites d’une exploitation (RF-41). |
+
+
+### 9.1 Paramètres de stockage
+
+Une marge de remplissage (`fillfactor`) inférieure à 100 laisse de la place aux mises à
+jour sur place (*HOT updates*), qui n'ont alors pas à réécrire les index. Les tables
+journalisées en insertion seule restent à 100. L'autovacuum est rendu plus réactif sur
+les tables à fort volume.
+
+| Table | Paramètres | Raison |
 | --- | --- | --- |
-| `idx_<table>_<fk>` | toutes les tables portant une FK | jointures et intégrité référentielle (79 index) |
-| `idx_etape_planifiee_date_prevue` | `etape_planifiee` | sélection des rappels du jour (RF-12) |
-| `idx_notification_statut` | `notification` | rejeu des envois en échec (RF-21, RF-24) |
-| `idx_alerte_zone_dates` | `alerte`, `ciblage_alerte` | diffusion prioritaire sous 15 min (RG-04) |
-| `idx_mouvement_stock_gcv_date` | `mouvement_stock` | calcul du stock et des reçus (RF-31) |
-| `idx_parcelle_geometrie` (GiST) | `parcelle` | cartographie des zones sinistrées (RF-45) |
-| `idx_sinistre_statut` | `sinistre` | suivi du traitement par le BNGRC (RF-43) |
-| `idx_donnee_pluviometrique_zone_date` | `donnee_pluviometrique` | cumuls à 10 et 20 jours (RF-25) |
+| `notification` | `fillfactor = 85`, `autovacuum_vacuum_scale_factor = 0.02`, `autovacuum_analyze_scale_factor = 0.02` | 5 à 10 M lignes/an, statut et date_lecture modifiés en continu. |
+| `etape_planifiee` | `fillfactor = 90`, `autovacuum_analyze_scale_factor = 0.05` | Dates réelles et statuts mis à jour au fil de la campagne. |
+| `reservation` | `fillfactor = 90` | Changements de statut fréquents (demandée → confirmée → close). |
+| `equipement` | `fillfactor = 90` | État et quantité réévalués à chaque réservation. |
+| `sinistre` | `fillfactor = 90` | Passage signalé → transmis → traité, avec pièces jointes. |
+| `synchronisation` | `fillfactor = 90` | Ligne complétée à la fin de chaque synchronisation. |
+| `alerte` | `fillfactor = 95` | Peu de mises à jour, mais diffusion massive en lecture. |
+| `journal_audit` | `fillfactor = 100`, `autovacuum_vacuum_scale_factor = 0.05`, `autovacuum_analyze_scale_factor = 0.05` | Insertion seule : pages pleines, purge mensuelle. |
+| `mouvement_stock` | `fillfactor = 100`, `autovacuum_analyze_scale_factor = 0.05` | Insertion seule : écritures comptables jamais modifiées. |
+
+
+### 9.2 Vue matérialisée
+
+`v_tableau_bord_zone` porte un index unique `(zone_id, campagne_id)`, indispensable à
+`REFRESH MATERIALIZED VIEW CONCURRENTLY` : le rafraîchissement nocturne ne bloque plus les
+lectures des tableaux de bord. Le second index sert les filtres par campagne.
+
+### 9.3 Compromis lecture / écriture
+
+Chaque index ralentit légèrement les insertions et consomme de l'espace. Le jeu ci-dessus
+reste volontairement ciblé : 99 index au total pour 49 tables.
+Les index inutilisés doivent être repérés en production avec `pg_stat_user_indexes`
+(`idx_scan = 0`) avant d'être supprimés, et les requêtes lentes analysées avec `EXPLAIN
+(ANALYZE, BUFFERS)`.
 
 Liste générée des index de clés étrangères :
-`idx_zone_parent_id`, `idx_organisation_zone_id`, `idx_utilisateur_zone_id`, `idx_utilisateur_organisation_id`, `idx_utilisateur_role_utilisateur_id`, `idx_utilisateur_role_role_id`, `idx_appareil_utilisateur_id`, `idx_parametre_modifie_par_id`, `idx_seuil_alerte_zone_id`, `idx_journal_audit_utilisateur_id`, `idx_synchronisation_appareil_id`, `idx_exploitation_proprietaire_id`, `idx_exploitation_zone_id`, `idx_parcelle_exploitation_id`, `idx_campagne_zone_id`, `idx_cycle_cultural_campagne_id`, `idx_cycle_cultural_parcelle_id`, `idx_cycle_cultural_variete_id`, `idx_etape_planifiee_cycle_id`, `idx_etape_planifiee_etape_code`, `idx_decalage_etape_planifiee_id`, `idx_decalage_valide_par_id`, `idx_recolte_cycle_id`, `idx_recolte_declare_par_id`, `idx_possession_materiel_exploitation_id`, `idx_possession_materiel_type_materiel_id`, `idx_fiche_technique_etape_code`, `idx_fiche_technique_auteur_id`, `idx_media_fiche_id`, `idx_formation_fiche_id`, `idx_question_formation_id`, `idx_choix_reponse_question_id`, `idx_inscription_formation_utilisateur_id`, `idx_inscription_formation_formation_id`, `idx_alerte_emetteur_id`, `idx_ciblage_alerte_alerte_id`, `idx_ciblage_alerte_zone_id`, `idx_notification_alerte_id`, `idx_notification_utilisateur_id`, `idx_notification_etape_planifiee_id`, `idx_donnee_pluviometrique_zone_id`, `idx_message_sensibilisation_auteur_id`, `idx_ciblage_message_message_id`, `idx_ciblage_message_zone_id`, `idx_equipement_type_materiel_id`, `idx_equipement_proprietaire_org_id`, `idx_equipement_zone_id`, `idx_reservation_equipement_id`, `idx_reservation_demandeur_id`, `idx_maintenance_equipement_id`, `idx_gcv_organisation_id`, `idx_gcv_responsable_id`, `idx_gcv_zone_id`, `idx_membre_gcv_exploitation_id`, `idx_membre_gcv_gcv_id`, `idx_decision_collective_gcv_id`, `idx_decision_collective_secretaire_id`, `idx_mouvement_stock_membre_id`, `idx_mouvement_stock_enregistre_par_id`, `idx_mouvement_stock_decision_id`, `idx_recu_mouvement_id`, `idx_demande_credit_exploitation_id`, `idx_demande_credit_imf_organisation_id`, `idx_demande_credit_campagne_id`, `idx_demande_credit_instructeur_id`, `idx_garantie_stock_demande_credit_id`, `idx_garantie_stock_gcv_id`, `idx_prix_marche_zone_id`, `idx_prix_marche_variete_id`, `idx_prix_marche_campagne_id`, `idx_sinistre_parcelle_id`, `idx_sinistre_alerte_id`, `idx_sinistre_declarant_id`, `idx_photo_sinistre_sinistre_id`, `idx_infrastructure_zone_id`, `idx_signalement_infra_infrastructure_id`, `idx_signalement_infra_auteur_id`, `idx_rapport_visite_agent_id`, `idx_rapport_visite_exploitation_id`
+`idx_zone_parent_id`, `idx_organisation_zone_id`, `idx_utilisateur_zone_id`, `idx_utilisateur_organisation_id`, `idx_utilisateur_role_utilisateur_id`, `idx_utilisateur_role_role_id`, `idx_appareil_utilisateur_id`, `idx_parametre_modifie_par_id`, `idx_seuil_alerte_zone_id`, `idx_journal_audit_utilisateur_id`, `idx_synchronisation_appareil_id`, `idx_exploitation_proprietaire_id`, `idx_campagne_zone_id`, `idx_cycle_cultural_campagne_id`, `idx_cycle_cultural_variete_id`, `idx_etape_planifiee_etape_code`, `idx_decalage_etape_planifiee_id`, `idx_decalage_valide_par_id`, `idx_recolte_declare_par_id`, `idx_possession_materiel_type_materiel_id`, `idx_fiche_technique_auteur_id`, `idx_formation_fiche_id`, `idx_question_formation_id`, `idx_choix_reponse_question_id`, `idx_inscription_formation_formation_id`, `idx_alerte_emetteur_id`, `idx_ciblage_alerte_zone_id`, `idx_notification_etape_planifiee_id`, `idx_message_sensibilisation_auteur_id`, `idx_ciblage_message_zone_id`, `idx_equipement_type_materiel_id`, `idx_equipement_proprietaire_org_id`, `idx_equipement_zone_id`, `idx_gcv_organisation_id`, `idx_gcv_responsable_id`, `idx_gcv_zone_id`, `idx_decision_collective_secretaire_id`, `idx_mouvement_stock_enregistre_par_id`, `idx_mouvement_stock_decision_id`, `idx_demande_credit_imf_organisation_id`, `idx_demande_credit_campagne_id`, `idx_demande_credit_instructeur_id`, `idx_garantie_stock_demande_credit_id`, `idx_garantie_stock_gcv_id`, `idx_prix_marche_variete_id`, `idx_prix_marche_campagne_id`, `idx_sinistre_alerte_id`, `idx_sinistre_declarant_id`, `idx_photo_sinistre_sinistre_id`, `idx_infrastructure_zone_id`, `idx_signalement_infra_infrastructure_id`, `idx_signalement_infra_auteur_id`, `idx_rapport_visite_agent_id`
 
 ---
 
@@ -1823,11 +1916,18 @@ Le schéma est en **troisième forme normale (3FN)** :
 | `donnee_pluviometrique` | 150 000 | ~15 Mo | conservation 20 ans (séries climatiques) |
 | `photo_sinistre` | 50 000 | objets S3 ~5 Go | URL en base, fichiers hors base |
 
+Le partitionnement et les purges indiqués ci-dessus sont des **recommandations
+d'exploitation** : le DDL livré reste volontairement non partitionné, car le
+partitionnement PostgreSQL exige d'inclure la clé de partition dans chaque clé primaire
+(ce qui modifierait les identifiants UUID et les clés étrangères). Il s'active au
+déploiement, par exemple avec `pg_partman` sur `notification` et `journal_audit`.
+
 ---
 
 ## 12. Script de création
 
-Le DDL complet (tables, contraintes, commentaires, index, vues) est disponible ici :
+Le DDL complet (tables, contraintes, commentaires, index, paramètres de stockage, vues)
+est disponible ici :
 
 - [`sql/schema.sql`](sql/schema.sql) — script généré, exécutable tel quel ;
 - [`sql/README.md`](sql/README.md) — ordre d'exécution et prérequis.
